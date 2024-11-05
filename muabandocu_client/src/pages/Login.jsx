@@ -14,6 +14,7 @@ const Login = () => {
   const labelStyle = "font-light opacity-80 text-lg my-2";
   return (
     <div className="h-screen flex font-vietnam ">
+      {/* Cmt 1 */}
       <div className="w-1/2 h-screen">
         <img src={marketBg} alt="" className="w-full h-full object-cover" />
       </div>
@@ -31,6 +32,7 @@ const Login = () => {
             {showPassword ? "Hiện" : "Ẩn"}
           </button>
         </div>
+        {/* hehe */}
         <Input
           placeholder="********"
           width="w-full"
@@ -44,6 +46,7 @@ const Login = () => {
         </Button>
         <div className="h-[1px] bg-[#181d1d] my-8 opacity-60 py"></div>
         <p className="flex justify-center items-center gap-1">
+          {/* Cmm2  */}
           Bạn chưa có tài khoản?{" "}
           <NavLink to="/signin" className="text-blue-800 opacity-80">
             Đăng ký
