@@ -3,6 +3,7 @@ import LayoutWeb from "./components/layout/LayoutWeb";
 import Home from "./pages/Home";
 import Product from "./pages/Product";
 import Login from "./pages/Login";
+import Signin from "./pages/SignIn";
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
         <Route path="product" element={<Product />} />
       </Route>
       <Route path="login" element={<Login />} />
+      <Route path="signin" element={<Signin />} />
     </Routes>
   );
 };
