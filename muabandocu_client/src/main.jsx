@@ -6,6 +6,7 @@ import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
+    {/* lkjdfljk s */}
     {/* Đây là cmt gì gì đó */}
     <BrowserRouter>
       {/* ok luôn */}
