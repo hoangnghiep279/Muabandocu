@@ -8,6 +8,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     {/* Đây là cmt gì gì đó */}
     <BrowserRouter>
+      {/* ok luôn */}
       <App />
     </BrowserRouter>
   </StrictMode>
