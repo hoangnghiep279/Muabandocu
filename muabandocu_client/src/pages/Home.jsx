@@ -1,10 +1,7 @@
-const Home = ()=>{
-    // jljlkj
+const Home = () => {
+  // jljlkj
 
-    return <main>
-        dass
-    </main>
-
-    // LKJdljf 
-}
-export default Home
+  return <main>dass helelo slliii</main>;
+  // LKJdljf
+};
+export default Home;
