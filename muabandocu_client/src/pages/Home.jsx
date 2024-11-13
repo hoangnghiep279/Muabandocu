@@ -1,9 +1,10 @@
+import Slideshow from "../components/Slideshow";
+
 const Home = () => {
-    // jljlkj
-
-    return <main>dass helelo slliii</main>;
-    // LKJdljf
-
-    // lkjlk
+  return (
+    <main>
+      <Slideshow />
+    </main>
+  );
 };
 export default Home;

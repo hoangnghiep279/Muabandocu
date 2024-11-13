@@ -1,11 +1,14 @@
-import express from "express";
-import "dotenv/config";
-
+// app.js
+const express = require("express");
+const cors = require("cors");
+const userRoutes = require("./routers/user");
 const app = express();
 
+app.use(cors());
+// Middleware
 app.use(express.json());
-const port = process.env.PORT || 3000;
 
-app.listen(port, () => {
-  console.log(`server started on port ${port}`);
-});
+// Routes
+app.use("/api/users", userRoutes);
+
+module.exports = app;

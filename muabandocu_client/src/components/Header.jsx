@@ -8,7 +8,7 @@ const Header = () => {
   const [login, setLogin] = useState(false);
   const [displayDropdown, setDisplayDropdown] = useState("hidden");
 
-  // hien thi dropdown user
+  // hien thi dropdown user rfce
   const handleDropdown = (display) => {
     setDisplayDropdown(display);
   };
