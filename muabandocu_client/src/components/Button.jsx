@@ -13,7 +13,7 @@ const Button = ({
   children,
   padding,
   width,
-  text,
+  fontSize,
   disabled = false,
   onClick,
   type = "button",
@@ -24,7 +24,7 @@ const Button = ({
         type={type}
         onClick={onClick}
         disabled={disabled}
-        className={`text-white opacity-80 ${text} flex items-center justify-center bg-[#181d1d] ${padding} ${width} rounded-md hover:bg-[#c7dddd] hover:text-[#131717] font-medium font-manrope`}
+        className={`text-white opacity-80 ${fontSize} flex items-center justify-center bg-[#181d1d] ${padding} ${width} rounded-md hover:bg-[#c7dddd] hover:text-[#131717] font-medium font-manrope`}
       >
         {children}
       </button>

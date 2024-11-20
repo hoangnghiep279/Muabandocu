@@ -3,7 +3,7 @@ import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 // import { Pagination, FreeMode } from "swiper";
 import { slide1, slide2, slide3, slide4 } from "../imgs";
 
@@ -27,15 +27,14 @@ const images = [
 ];
 function Slideshow() {
   return (
-    <section className="py-12">
-      <div className="container">
+    <section className="py-8">
+      <div>
         <Swiper
           navigation
           pagination={{ type: "bullets" }}
           modules={[Navigation, Pagination, Autoplay]}
-          autoplay={{ delay: 3000, disableOnInteraction: false }}
-          onSwiper={(swiper) => console.log(swiper)}
-          className="h-96 w-full rounded-lg"
+          autoplay={{ delay: 8000, disableOnInteraction: false }}
+          className="h-[600px] w-full rounded-lg"
         >
           {images.map((image, index) => (
             <SwiperSlide key={index}>

@@ -1,8 +1,6 @@
 const db = require("../config/database.js");
-const jwt = require("jsonwebtoken");
 const { signToken } = require("../helpers/token.js");
 const { validateEmail } = require("../validations/validateEmail");
-const { validatePhone } = require("../validations/validatePhone");
 async function login(user) {
   try {
     const [[rows]] = await db.execute(
@@ -85,9 +83,9 @@ async function register(user) {
         \`password\`,
         \`avatar\`
       ) VALUES(
-        ?,              -- id (sử dụng userId đã tạo)
-        2,              -- permission_id
-        ?,              -- cart_id (sử dụng cartId đã tạo)
+        ?,             
+        2,              
+        ?,              
         ?, 
         ?, 
         ?, 
@@ -102,8 +100,8 @@ async function register(user) {
         \`id\`,
         \`user_id\`
       ) VALUES(
-        ?,              -- id của cart (sử dụng cartId đã tạo)
-        ?               -- user_id (sử dụng userId đã tạo)
+        ?,              
+        ?             
       );`,
       [cartId, userId]
     );
@@ -120,4 +118,46 @@ async function register(user) {
   }
 }
 
-module.exports = { login, register };
+async function changePassword(id, user) {
+  try {
+    if (user.password == null || user.password == "") {
+      const error = new Error("Hãy nhập mật khẩu hiện tại của bạn!");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    if (user.newPassword == null || user.newPassword == "") {
+      const error = new Error("Mật khẩu mới không được để trống!");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    let [rows] = await db.execute(
+      `SELECT *
+          FROM \`user\`
+          WHERE \`id\`='${id}'
+          AND \`password\`='${user.password}'`
+    );
+
+    if (rows == null) {
+      const error = new Error("Mật khẩu cũ không chính xác!");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    await db.execute(
+      `UPDATE \`user\` 
+          SET \`password\`='${user.newPassword}'
+          WHERE \`id\` = '${id}';`
+    );
+
+    return {
+      code: 200,
+      message: "Mật khẩu đã được thay đổi!",
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
+module.exports = { login, register, changePassword };

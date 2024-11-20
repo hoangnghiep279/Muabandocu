@@ -7,6 +7,7 @@ import Input from "../components/Input";
 import { marketBg } from "../imgs";
 import axios from "axios";
 import Validation from "../components/Validation";
+import { ToastContainer, toast } from "react-toastify";
 const Signin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -48,10 +49,14 @@ const Signin = () => {
           password: values.password,
         }
       );
-
+      toast("Đăng ký tài khoản thanh cong", { type: "success" });
       navigate("/login");
     } catch (error) {
-      setError(Validation(values));
+      if (error.response && error.response.status === 401) {
+        setError({ email: "Email đã tồn tại. Vui lòng chọn email khác." });
+      } else {
+        setError(Validation(values));
+      }
     }
   };
   const handleClickPassword = () => {
@@ -130,7 +135,7 @@ const Signin = () => {
         <Button
           padding={"py-3"}
           width="w-full"
-          text="text-base"
+          fontSize="text-base"
           type={"submit"}
         >
           Đăng ký

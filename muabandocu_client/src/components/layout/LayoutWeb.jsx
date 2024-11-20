@@ -1,14 +1,23 @@
 import { Outlet } from "react-router-dom";
 import Header from "../Header";
 import Footer from "../Footer";
-const LayoutWeb = () => {
+import Crolltotop from "../Crolltotop";
+
+function LayoutWeb() {
   return (
     <div>
-      <Header />
-      <Outlet />
-      <Footer />
+      <header>
+        <Header />
+        <Crolltotop />
+      </header>
+      <main>
+        <Outlet />
+      </main>
+      <footer>
+        <Footer />
+      </footer>
     </div>
   );
-};
+}
 
 export default LayoutWeb;

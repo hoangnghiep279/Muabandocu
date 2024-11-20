@@ -7,6 +7,7 @@ import Input from "../components/Input";
 import { marketBg } from "../imgs";
 import axios from "axios";
 import Validation from "../components/Validation";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -51,10 +52,22 @@ const Login = () => {
         }
       );
 
-      localStorage.setItem("token", response.data.token);
-      navigate("/");
+      if (response) {
+        toast("Đăng nhập thành công", { type: "success" });
+        localStorage.setItem("token", response.data.token);
+        navigate("/");
+      }
     } catch (error) {
-      setError(Validation(values));
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        toast(error.response.data.message, { type: "error" });
+        setError({ serverError: error.response.data.message });
+      } else {
+        toast("Đăng nhập thất bại", { type: "error" });
+      }
     }
   };
 
@@ -109,7 +122,12 @@ const Login = () => {
         <p className="text-end my-6 cursor-pointer text-blue-400">
           Forgot password?
         </p>
-        <Button padding="py-3" width="w-full" text="text-base" type="submit">
+        <Button
+          padding="py-3"
+          width="w-full"
+          fontSize="text-base"
+          type="submit"
+        >
           Đăng nhập
         </Button>
         <div className="h-[1px] bg-[#181d1d] my-8 opacity-60 py"></div>
