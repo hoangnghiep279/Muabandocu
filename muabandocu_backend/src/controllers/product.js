@@ -2,8 +2,10 @@ const db = require("../config/database.js");
 const path = require("path");
 const uploadMultipleImages =
   require("../helpers/uploadimg").uploadMultipleImages;
-async function getProducts() {
+async function getProducts(page = 1, limit = 10) {
   try {
+    const offset = (page - 1) * limit;
+
     const [productRows] = await db.execute(
       `SELECT
         \`id\`,
@@ -12,9 +14,10 @@ async function getProducts() {
         \`description\`,
         \`price\`,
         \`status\`
-      FROM
-          \`product\`
-      `
+        FROM
+        \`product\`
+      LIMIT ? OFFSET ?`,
+      [limit, offset]
     );
     const [imageRows] = await db.execute(
       `SELECT product_id, img_url 
@@ -29,10 +32,17 @@ async function getProducts() {
         image: images,
       };
     });
+    const [totalResult] = await db.execute(
+      `SELECT COUNT(*) AS total FROM \`product\``
+    );
+    const total = totalResult[0].total;
 
     return {
       code: 200,
       data: products,
+      total,
+      pages: Math.ceil(total / limit), // Tổng số trang
+      currentPage: page,
     };
   } catch (error) {
     throw error;
@@ -150,6 +160,69 @@ async function updateProduct(productId, product, files) {
     throw error;
   }
 }
+async function searchProduct(keyword) {
+  if (!keyword || keyword.trim() === "") {
+    throw new Error("Keyword không hợp lệ!");
+  }
+
+  try {
+    // Truy vấn thông tin sản phẩm cùng ảnh
+    const [rows] = await db.execute(
+      `SELECT 
+         p.id AS product_id,
+         p.title,
+         p.description,
+         p.price,
+         p.quantity,
+         p.status,
+         i.img_url
+       FROM 
+         product p
+       LEFT JOIN 
+         image i
+       ON 
+         p.id = i.product_id
+       WHERE 
+         p.title LIKE ?`,
+      [`%${keyword.toLowerCase()}%`]
+    );
+
+    if (rows.length === 0) {
+      throw new Error("Không tìm thấy sản phẩm!");
+    }
+
+    const products = rows.reduce((acc, row) => {
+      const product = acc.find((p) => p.product_id === row.product_id);
+      if (product) {
+        product.image.push({
+          product_id: row.product_id,
+          img_url: row.img_url,
+        });
+      } else {
+        acc.push({
+          product_id: row.product_id,
+          title: row.title,
+          description: row.description,
+          price: row.price,
+          quantity: row.quantity,
+          status: row.status,
+          image: row.img_url
+            ? [{ product_id: row.product_id, img_url: row.img_url }]
+            : [],
+        });
+      }
+      return acc;
+    }, []); // gan acc = 1 mang
+
+    return {
+      code: 200,
+      data: products,
+    };
+  } catch (error) {
+    console.error("Lỗi tìm kiếm sản phẩm:", error.message);
+    throw error;
+  }
+}
 async function getDetailProduct(productId) {
   try {
     // Truy vấn thông tin sản phẩm
@@ -174,13 +247,6 @@ async function getDetailProduct(productId) {
          p.id = ?`,
       [productId]
     );
-
-    // Kiểm tra nếu sản phẩm không tồn tại
-    if (productRows.length === 0) {
-      const err = new Error("Sản phẩm không tồn tại.");
-      err.statusCode = 404;
-      throw err;
-    }
 
     // Kiểm tra nếu sản phẩm không tồn tại
     if (productRows.length === 0) {
@@ -244,5 +310,6 @@ module.exports = {
   insertProduct,
   updateProduct,
   getDetailProduct,
+  searchProduct,
   deleteProduct,
 };

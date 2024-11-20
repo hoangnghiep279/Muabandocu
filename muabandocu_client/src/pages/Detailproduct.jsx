@@ -121,7 +121,7 @@ const ProductDetail = () => {
                 alt=""
               />
             </span>
-            <span className="text-light  opacity-70 text-black">
+            <span className="text-light font-semibold opacity-70 text-black">
               Người bán: {product.seller_name}
             </span>{" "}
           </p>

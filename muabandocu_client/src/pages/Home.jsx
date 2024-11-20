@@ -1,29 +1,44 @@
 import Slideshow from "../components/Slideshow";
+import { NavLink } from "react-router-dom";
 import { card } from "../imgs";
 import Card from "../components/Card";
 import Loading from "../components/Loading";
 import Productcard from "../components/Productcard";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  MdKeyboardDoubleArrowRight,
+  MdKeyboardDoubleArrowLeft,
+} from "react-icons/md";
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get("http://localhost:3000/products");
+        const response = await axios.get(
+          `http://localhost:3000/products?page=${page}&limit=6`
+        );
         setProducts(response.data.data);
-
+        setTotalPages(response.data.pages);
         setLoading(false);
       } catch (error) {
         console.error("Lỗi khi lấy sản phẩm:", error);
+        setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
-
+  }, [page]);
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
   if (loading) return <Loading />;
   return (
     <main>
@@ -42,9 +57,11 @@ const Home = () => {
                 Nhìn qua các sản phẩm mới của chúng tôi và làm cho ngày của bạn
                 đẹp hơn và vui vẻ hơn.
               </p>
-              <button className="px-6 border-[1px] border-[#005D63] py-3 text-lg font-medium rounded-md hover:bg-[#005D63] hover:border-transparent hover:text-white text-[#005D63]">
-                Xem tất cả
-              </button>
+              <NavLink to={"/product"}>
+                <button className="px-6 border-[1px] border-[#005D63] py-3 text-lg font-medium rounded-md hover:bg-[#005D63] hover:border-transparent hover:text-white text-[#005D63]">
+                  Xem tất cả
+                </button>
+              </NavLink>
             </div>
           </div>
           <div className="flex flex-wrap gap-7 ">
@@ -55,6 +72,23 @@ const Home = () => {
             ) : (
               <p>Không có sản phẩm nào!</p>
             )}
+          </div>
+          <div className="flex justify-center items-center gap-3 mt-8">
+            <button
+              className="px-2 py-2 mx-2 bg-[#005d6312] rounded hover:bg-[#005c6338] border border-primaryColor hover:border"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+            >
+              <MdKeyboardDoubleArrowLeft />
+            </button>
+            <span className="text-lg">{`${page} `}</span>
+            <button
+              className="px-2 py-2 mx-2 bg-[#005d6312] rounded hover:bg-[#005c6338] border border-primaryColor hover:border"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+            >
+              <MdKeyboardDoubleArrowRight />
+            </button>
           </div>
         </div>
       </div>

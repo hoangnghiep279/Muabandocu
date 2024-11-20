@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { search, cart, profile, arrowUp } from "../imgs";
 import Button from "./Button";
-
+import { IoNotificationsOutline } from "react-icons/io5";
 const Header = () => {
-  const [activeLick, setActiveLink] = useState("");
+  const [keyword, setKeyword] = useState("");
+  const [error, setError] = useState("");
   const [login, setLogin] = useState(false);
   const [displayDropdown, setDisplayDropdown] = useState("hidden");
 
@@ -16,12 +17,19 @@ const Header = () => {
     }
   }, []);
 
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!keyword.trim()) {
+      setError("Vui lòng nhập từ khóa tìm kiếm.");
+      return;
+    }
+    setError("");
+    navigate(`/search?keyword=${encodeURIComponent(keyword)}`);
+  };
   const handleDropdown = (display) => {
     setDisplayDropdown(display);
-  };
-
-  const handleLinkClick = (color) => {
-    setActiveLink(color);
   };
 
   const handleLogout = () => {
@@ -42,24 +50,32 @@ const Header = () => {
         {/* col-2 */}
         <div className="flex flex-col gap-7 items-center font-manrope">
           <div className="min-w-[700px] max-w-3xl h-11">
-            <div className="w-full h-full border-[1px] justify-between flex">
+            <form
+              onSubmit={handleSearch}
+              className="w-full h-full border-[1px] justify-between flex"
+            >
               <input
                 className="default-input w-full px-2"
                 placeholder="Tìm kiếm sản phẩm"
                 type="text"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
               />
-              <span className="bg-[#FFD44D] block ml-3 flex-center px-3">
+              <button
+                type="submit"
+                className="bg-[#FFD44D] block ml-3 flex-center px-3"
+              >
                 <img src={search} alt="" />
-              </span>
-            </div>
+              </button>
+              {error && <p className="text-red-500">{error}</p>}
+            </form>
           </div>
           <nav>
-            <ul className="flex ">
-              <li className="text-white  py-1 px-8">
+            <ul className="flex">
+              <li className="text-white py-1 px-8">
                 <NavLink
                   to="/"
-                  className={`${activeLick === "/" ? "font-bold" : ""}`}
-                  onClick={() => handleLinkClick("/")}
+                  className={({ isActive }) => (isActive ? "font-bold" : "")}
                 >
                   Trang chủ
                 </NavLink>
@@ -67,8 +83,7 @@ const Header = () => {
               <li className="text-white py-1 px-8">
                 <NavLink
                   to="/product"
-                  className={`${activeLick === "product" ? "font-bold" : ""}`}
-                  onClick={() => handleLinkClick("product")}
+                  className={({ isActive }) => (isActive ? "font-bold" : "")}
                 >
                   Sản phẩm
                 </NavLink>
@@ -76,8 +91,7 @@ const Header = () => {
               <li className="text-white py-1 px-8">
                 <NavLink
                   to="/contact"
-                  className={`${activeLick === "contact" ? "font-bold " : ""}`}
-                  onClick={() => handleLinkClick("product")}
+                  className={({ isActive }) => (isActive ? "font-bold" : "")}
                 >
                   Liên hệ
                 </NavLink>
@@ -89,10 +103,14 @@ const Header = () => {
         {login ? (
           <div className="mt-2">
             <div className="flex items-center gap-4 font-manrope">
-              <div className="flex text-white">
+              <div className="flex text-white text-3xl mt-1">
+                <IoNotificationsOutline />
+              </div>
+              <div className="flex text-white ">
                 <img src={cart} alt="" />
                 <span>(0)</span>
               </div>
+
               <div className="relative mb-[-20px]">
                 <img
                   src={profile}
@@ -112,12 +130,12 @@ const Header = () => {
                   <div className="absolute p-3 w-40 rounded-md bg-white top-10 right-[-70px] z-20">
                     <ul>
                       <li>
-                        <a
-                          href="#"
+                        <NavLink
+                          to={"/account"}
                           className="block py-2 text-primaryColor font-semibold"
                         >
                           Tài khoản của tôi
-                        </a>
+                        </NavLink>
                       </li>
                       <li>
                         <a
