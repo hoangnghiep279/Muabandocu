@@ -6,7 +6,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { marketBg } from "../imgs";
 import axios from "axios";
-import Validation from "../components/Validation";
+import Validation from "../utils/Validation";
 import { toast } from "react-toastify";
 
 const Login = () => {
@@ -39,10 +39,10 @@ const Login = () => {
     const validationErrors = Validation(values);
     setError(validationErrors);
 
-    // ktra xem có trả về lỗi không
     if (Object.keys(validationErrors).length > 0) {
       return;
     }
+
     try {
       const response = await axios.post(
         "http://localhost:3000/api/users/login",
@@ -52,10 +52,12 @@ const Login = () => {
         }
       );
 
-      if (response) {
+      if (response && response.data.data && response.data.data.token) {
+        localStorage.setItem("token", response.data.data.token);
         toast("Đăng nhập thành công", { type: "success" });
-        localStorage.setItem("token", response.data.token);
         navigate("/");
+      } else {
+        toast("Token không hợp lệ", { type: "error" });
       }
     } catch (error) {
       if (

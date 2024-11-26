@@ -2,6 +2,8 @@ const db = require("../config/database.js");
 const path = require("path");
 const uploadMultipleImages =
   require("../helpers/uploadimg").uploadMultipleImages;
+
+// danh sách sản phẩm hiển thị
 async function getProducts(page = 1, limit = 10) {
   try {
     const offset = (page - 1) * limit;
@@ -48,13 +50,11 @@ async function getProducts(page = 1, limit = 10) {
     throw error;
   }
 }
-// them san pham
+//THÊM SẢN PHẨM
 async function insertProduct(products, files) {
   try {
-    // Kiểm tra xem tên sản phẩm đã tồn tại chưa
     const [ExistingTitle] = await db.execute(
-      `SELECT title FROM product WHERE title = ?`,
-      [products.title]
+      `SELECT title FROM product WHERE title = '${products.title}'`
     );
     if (ExistingTitle.length > 0) {
       const err = new Error("Tên sản phẩm đã có trong hệ thống!");
@@ -66,26 +66,38 @@ async function insertProduct(products, files) {
     const [productResult] = await db.execute("SELECT uuid() AS productId");
     const productId = productResult[0].productId;
 
-    // Thêm sản phẩm vào bảng product
     await db.execute(
-      `INSERT INTO \`product\` (\`id\`, \`user_id\`, \`title\`, \`description\`, \`price\`,\`quantity\`, \`status\`) 
-       VALUES (?, ?, ?, ?, ?, ?, 1)`,
-      [
-        productId,
-        products.userId,
-        products.title,
-        products.description,
-        products.price,
-        products.quantity,
-      ]
+      `INSERT INTO \`product\`(
+          \`id\`,
+          \`user_id\`,
+          \`category_id\`,
+          \`title\`,
+          \`linkzalo\`,
+          \`description\`,
+          \`price\`,
+          \`warranty\`,
+          \`shipfee\`,
+          \`status\`,
+          \`approved\`
+      ) 
+       VALUES (
+        '${productId}',
+        '${products.userId}',
+        '${products.categoryId}',
+        '${products.title}',
+        '${products.linkzalo}',
+        '${products.description}',
+        '${products.price}',
+        '${products.warranty}',
+        '${products.shipfee}',
+        0,
+        0)`
     );
 
-    // Upload ảnh và lấy danh sách URL
     if (files && files.length > 0) {
       const uploadResult = await uploadMultipleImages(files);
       const imageUrls = uploadResult.images;
 
-      // Lưu đường dẫn ảnh vào bảng image
       const imageInserts = imageUrls.map((imageUrl) => {
         return db.execute(
           `INSERT INTO \`image\` (\`id\`, \`product_id\`, \`img_url\`)
@@ -93,18 +105,40 @@ async function insertProduct(products, files) {
           [productId, imageUrl]
         );
       });
-      // Thực hiện tất cả các truy vấn ảnh đồng thời
       await Promise.all(imageInserts);
     }
 
     return {
       code: 200,
-      message: "Thêm sản phẩm thành công!",
+      message: "Thêm sản phẩm thành công! Đang chờ duyệt từ quản trị viên",
     };
   } catch (error) {
     throw error;
   }
 }
+// xem sản phẩm chờ duyệt
+async function getPendingProducts() {
+  try {
+    const [products] = await db.execute(
+      `SELECT id, title, description, price, warranty, shipfee, category_id, user_id 
+       FROM product 
+       WHERE approved = 0`
+    );
+    if (products.length === 0) {
+      return {
+        code: 404,
+        message: "Không có sản phẩm nào đang chờ duyệt.",
+      };
+    }
+    return {
+      code: 200,
+      data: products,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+// UPDATE SẢN PHẨM
 async function updateProduct(productId, product, files) {
   try {
     // Kiểm tra xem sản phẩm có tồn tại không
@@ -305,9 +339,45 @@ async function deleteProduct(productId) {
   }
 }
 
+async function approveProduct(productId) {
+  try {
+    // Kiểm tra sản phẩm
+    const [product] = await db.execute(
+      `SELECT id, approved FROM product WHERE id = ?`,
+      [productId]
+    );
+
+    if (product.length === 0) {
+      const err = new Error("Sản phẩm không tồn tại!");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (product[0].approved === 1) {
+      const err = new Error("Sản phẩm đã được duyệt!");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Cập nhật trạng thái duyệt
+    await db.execute(`UPDATE product SET approved = 1 WHERE id = ?`, [
+      productId,
+    ]);
+
+    return {
+      code: 200,
+      message: "Phê duyệt sản phẩm thành công!",
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
+  getPendingProducts,
   getProducts,
   insertProduct,
+  approveProduct,
   updateProduct,
   getDetailProduct,
   searchProduct,

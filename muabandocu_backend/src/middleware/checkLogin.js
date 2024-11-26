@@ -13,6 +13,7 @@ const checkLogin = async (req, res, next) => {
     const token = bearerToken[1];
 
     req.payload = await verifyToken(token);
+
     next();
   } catch (error) {
     next(error);

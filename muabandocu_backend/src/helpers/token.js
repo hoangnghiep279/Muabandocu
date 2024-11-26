@@ -21,7 +21,8 @@ function signToken(accountId) {
 
 function verifyToken(token) {
   return new Promise((resolve, reject) => {
-    jwt.verify(token, scretKey, (err, payload) => {
+    const secretKey = process.env.PRIVATE_KEY;
+    jwt.verify(token, secretKey, (err, payload) => {
       if (err) {
         err.statusCode = 401;
         reject(err);

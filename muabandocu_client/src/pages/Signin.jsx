@@ -6,7 +6,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { marketBg } from "../imgs";
 import axios from "axios";
-import Validation from "../components/Validation";
+import Validation from "../utils/Validation";
 import { ToastContainer, toast } from "react-toastify";
 const Signin = () => {
   const [showPassword, setShowPassword] = useState(false);

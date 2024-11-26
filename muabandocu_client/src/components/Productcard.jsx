@@ -7,7 +7,7 @@ function Productcard({ product }) {
     <div className="font-manropew w-[370px]">
       <div className="w-full h-[310px] rounded-t-xl overflow-hidden">
         {product.image.length > 0 ? (
-          <NavLink to={`/product/${product.id}`}>
+          <NavLink to={`/product/${product.product_id || product.id}`}>
             <img
               className="w-full h-full object-cover  hover:scale-105 transition duration-300 ease-in-out"
               src={`http://localhost:3000/${product.image[0]?.img_url}`}
@@ -19,7 +19,7 @@ function Productcard({ product }) {
         )}
       </div>
       <div className="box-shadow p-3">
-        <NavLink to={`/product/${product.id}`}>
+        <NavLink to={`/product/${product.product_id || product.id}`}>
           <h3 className="text-xl font-semibold w-full mt-4 text-primaryColor">
             {product.title}
           </h3>

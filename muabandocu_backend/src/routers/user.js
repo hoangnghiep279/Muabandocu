@@ -1,8 +1,33 @@
 const express = require("express");
-
 const router = express.Router();
 const controller = require("../controllers/user");
 const { checkLogin } = require("../middleware/checkLogin");
+const {
+  checkMyAccount,
+  checkDeleteUser,
+  checkAdmin,
+  checkAdministrator,
+} = require("../middleware/checkPermission");
+const multer = require("multer");
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../resources/user-img"));
+  },
+});
+
+const upload = multer({ storage });
+
+router.post("/register", async (req, res, next) => {
+  try {
+    console.log(req.body);
+
+    res.json(await controller.register(req.body));
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.post("/login", async (req, res, next) => {
   try {
@@ -11,9 +36,23 @@ router.post("/login", async (req, res, next) => {
     next(error);
   }
 });
-router.post("/register", async (req, res, next) => {
+
+router.get("/profile", checkLogin, async (req, res, next) => {
   try {
-    res.json(await controller.register(req.body));
+    const userId = req.payload.id;
+    const user = await controller.getUser(userId);
+    res.status(200).json({ data: user });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put("/:id", upload.single("avatar"), async (req, res, next) => {
+  try {
+    const user = req.body;
+    console.log(req.file);
+    const result = await controller.updateUser(req.params.id, user, req.file);
+    res.json(result);
   } catch (error) {
     next(error);
   }

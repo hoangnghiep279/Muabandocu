@@ -44,7 +44,7 @@ const SearchResult = () => {
       ) : (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product) => (
-            <Productcard key={product.product_id} product={product} />
+            <Productcard key={product.id} product={product} />
           ))}
         </ul>
       )}

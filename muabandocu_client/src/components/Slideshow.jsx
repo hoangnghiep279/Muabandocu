@@ -33,7 +33,7 @@ function Slideshow() {
           navigation
           pagination={{ type: "bullets" }}
           modules={[Navigation, Pagination, Autoplay]}
-          autoplay={{ delay: 8000, disableOnInteraction: false }}
+          autoplay={{ delay: 3000, disableOnInteraction: false }}
           className="h-[600px] w-full rounded-lg"
         >
           {images.map((image, index) => (
