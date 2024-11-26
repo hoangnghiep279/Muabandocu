@@ -8,7 +8,7 @@ function LayoutWeb() {
         <div className="flex w-[20%] h-screen">
           <Navbar />
         </div>
-        <div>
+        <div className="w-[80%]">
           {" "}
           <Outlet />
         </div>

@@ -48,9 +48,18 @@ function Home() {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "có lỗi";
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   return (
     <>
-      <div className="p-4 max-w-md mx-auto">
+      <div className="p-4 w-full mx-auto h-screen overflow-auto ">
         <h1 className="text-3xl font-bold mb-4">
           Danh sách sản phẩm chờ duyệt
         </h1>
@@ -62,22 +71,22 @@ function Home() {
                 <th className="px-4 py-2">Tiêu đề</th>
                 <th className="px-4 py-2">Mô tả</th>
                 <th className="px-4 py-2">Giá</th>
+                <th className="px-4 py-2">Ngày đăng bài</th>
                 <th className="px-4 py-2">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-100">
-                  <td className="px-4 py-2 border-t border-b">
-                    {product.title}
+                  <td className="px-4 border h-16 ">{product.title}</td>
+                  <td className="px-4 border  h-16">
+                    <span className=" display-dot">{product.description}</span>
                   </td>
-                  <td className="px-4 py-2 border-t border-b">
-                    {product.description}
+                  <td className="px-4 border h-16 ">{product.price} VNĐ</td>
+                  <td className="px-4 border h-16 ">
+                    {formatDate(product.created_at)}
                   </td>
-                  <td className="px-4 py-2 border-t border-b">
-                    {product.price} VNĐ
-                  </td>
-                  <td className="px-4 py-2 border-t border-b">
+                  <td className="px-4 border h-16 ">
                     <button
                       className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                       onClick={() => approveProduct(product.id)}

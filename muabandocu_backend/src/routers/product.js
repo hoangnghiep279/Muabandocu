@@ -94,14 +94,19 @@ router.get(
   }
 );
 
-router.post("/:id/approve", checkAdministrator, async (req, res, next) => {
-  try {
-    const productId = req.params.id;
-    const result = await controller.approveProduct(productId);
-    res.status(result.code).json(result);
-  } catch (error) {
-    next(error);
+router.post(
+  "/:id/approve",
+  checkLogin,
+  checkAdministrator,
+  async (req, res, next) => {
+    try {
+      const productId = req.params.id;
+      const result = await controller.approveProduct(productId);
+      res.status(result.code).json(result);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 module.exports = router;

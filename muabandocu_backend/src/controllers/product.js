@@ -120,7 +120,7 @@ async function insertProduct(products, files) {
 async function getPendingProducts() {
   try {
     const [products] = await db.execute(
-      `SELECT id, title, description, price, warranty, shipfee, category_id, user_id 
+      `SELECT id, title, description, price, warranty, shipfee, category_id, user_id, created_at
        FROM product 
        WHERE approved = 0`
     );
@@ -133,6 +133,40 @@ async function getPendingProducts() {
     return {
       code: 200,
       data: products,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+// duyệt sản phẩm
+async function approveProduct(productId) {
+  try {
+    // Kiểm tra sản phẩm
+    const [product] = await db.execute(
+      `SELECT id, approved FROM product WHERE id = ?`,
+      [productId]
+    );
+
+    if (product.length === 0) {
+      const err = new Error("Sản phẩm không tồn tại!");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (product[0].approved === 1) {
+      const err = new Error("Sản phẩm đã được duyệt!");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Cập nhật trạng thái duyệt
+    await db.execute(`UPDATE product SET approved = 1 WHERE id = ?`, [
+      productId,
+    ]);
+
+    return {
+      code: 200,
+      message: "Phê duyệt sản phẩm thành công!",
     };
   } catch (error) {
     throw error;
@@ -333,40 +367,6 @@ async function deleteProduct(productId) {
     return {
       code: 200,
       message: "Xóa sản phẩm thành công!",
-    };
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function approveProduct(productId) {
-  try {
-    // Kiểm tra sản phẩm
-    const [product] = await db.execute(
-      `SELECT id, approved FROM product WHERE id = ?`,
-      [productId]
-    );
-
-    if (product.length === 0) {
-      const err = new Error("Sản phẩm không tồn tại!");
-      err.statusCode = 404;
-      throw err;
-    }
-
-    if (product[0].approved === 1) {
-      const err = new Error("Sản phẩm đã được duyệt!");
-      err.statusCode = 400;
-      throw err;
-    }
-
-    // Cập nhật trạng thái duyệt
-    await db.execute(`UPDATE product SET approved = 1 WHERE id = ?`, [
-      productId,
-    ]);
-
-    return {
-      code: 200,
-      message: "Phê duyệt sản phẩm thành công!",
     };
   } catch (error) {
     throw error;
