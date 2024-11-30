@@ -180,14 +180,12 @@ async function updateUser(userId, user, file) {
     let avatarUrl = currentAvatar;
 
     if (file) {
-      // Tải ảnh mới
       const uploadResult = await uploadSingleImage(file);
       avatarUrl = uploadResult.image;
 
       if (currentAvatar !== "resources/default-avatar.png") {
         const currentAvatarPath = path.join(__dirname, "../", currentAvatar);
 
-        // Kiểm tra và xóa file ảnh hiện tại
         if (fs.existsSync(currentAvatarPath)) {
           await fs.promises.unlink(currentAvatarPath);
         }
