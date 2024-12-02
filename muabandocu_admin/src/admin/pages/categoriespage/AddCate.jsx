@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { addCategory } from "../../api/CategoryApi";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 function AddCate() {
   const [categoryName, setCategoryName] = useState("");
   const [message, setMessage] = useState("");
@@ -9,6 +10,7 @@ function AddCate() {
     e.preventDefault();
     await addCategory(categoryName, setMessage);
     setCategoryName("");
+    toast("Thêm sản phẩm thành công", { type: "success" });
     navigate("/admin/category");
   };
   return (

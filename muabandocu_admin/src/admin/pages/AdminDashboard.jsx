@@ -27,7 +27,7 @@ function AdminDashboard() {
           Danh sách sản phẩm chờ duyệt
         </h1>
         {products.length > 0 ? (
-          <div className="overflow-y-auto max-h-[calc(100vh-85px)]">
+          <div className="overflow-y-auto min-h-[450px]">
             <table className="table-auto w-full">
               <thead className="bg-gray-100 sticky top-0 z-10">
                 <tr>

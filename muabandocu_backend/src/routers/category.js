@@ -18,6 +18,13 @@ router.post("/", checkLogin, checkAdmin, async (req, res, next) => {
     next(error);
   }
 });
+router.get("/:id", async (req, res, next) => {
+  try {
+    res.json(await controller.getDetailCategory(req.params.id));
+  } catch (error) {
+    next(error);
+  }
+});
 router.put("/:id", checkLogin, checkAdmin, async (req, res, next) => {
   try {
     res.json(await controller.updateCategory(req.params.id, req.body));

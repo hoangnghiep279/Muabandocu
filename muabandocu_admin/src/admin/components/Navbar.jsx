@@ -32,14 +32,24 @@ function Navbar() {
           <li>Quản lý loại sản phẩm</li>
         </NavLink>
         <NavLink
-          to="/#"
+          to="/admin/managerAccount"
           className={({ isActive }) =>
             isActive
               ? "font-bold hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
               : "hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
           }
         >
-          <li>Quản lý loại sản phẩm</li>
+          <li>Quản lý manager</li>
+        </NavLink>
+        <NavLink
+          to="/admin/userAccount"
+          className={({ isActive }) =>
+            isActive
+              ? "font-bold hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
+              : "hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
+          }
+        >
+          <li>Quản lý người dùng</li>
         </NavLink>
         <NavLink
           to="/login"

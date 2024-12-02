@@ -11,6 +11,23 @@ async function getCategory() {
     throw error;
   }
 }
+async function getDetailCategory(id) {
+  try {
+    const [result] = await db.execute("SELECT * FROM category WHERE id = ?", [
+      id,
+    ]);
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Danh mục không tồn tại!" });
+    }
+    return {
+      code: 200,
+      data: result,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
 
 async function insertCategory(cate) {
   try {
@@ -109,6 +126,7 @@ async function deleteCategory(id) {
 
 module.exports = {
   getCategory,
+  getDetailCategory,
   insertCategory,
   updateCategory,
   deleteCategory,

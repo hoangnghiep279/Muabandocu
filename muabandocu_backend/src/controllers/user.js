@@ -4,6 +4,7 @@ const path = require("path");
 const { signToken } = require("../helpers/token.js");
 const { validateEmail } = require("../validations/validateEmail");
 const { validatePhone } = require("../validations/validatePhone");
+const e = require("cors");
 const uploadSingleImage = require("../helpers/uploadimg").uploadSingleImage;
 async function register(user) {
   try {
@@ -30,6 +31,16 @@ async function register(user) {
       throw err;
     }
 
+    const [name] = await db.execute(
+      `SELECT name FROM \`user\` WHERE \`name\` = ?`,
+      [user.name]
+    );
+    if (name.length > 0) {
+      const err = new Error("Tên người dùng đã tồn tại!");
+      err.statusCode = 401;
+      throw err;
+    }
+
     await db.execute("START TRANSACTION");
 
     // Tạo `user_id` và `cart_id`
@@ -44,7 +55,7 @@ async function register(user) {
           \`id\`,
           \`permission_id\`,
           \`cart_id\`,
-          \`username\`,
+          \`name\`,
           \`gender\`,
           \`email\`,
           \`password\`,
@@ -87,6 +98,66 @@ async function register(user) {
   }
 }
 
+async function resgisterManager(user) {
+  try {
+    if (!user.name || user.name.trim() === "") {
+      const err = new Error("Bạn cần có một cái tên!");
+      err.statusCode = 400;
+      throw err;
+    }
+    if (!validateEmail(user.email)) {
+      const err = new Error("Email không hợp lệ!");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const [email] = await db.execute(
+      `SELECT email FROM \`user\` WHERE \`email\` = ?`,
+      [user.email]
+    );
+
+    if (email.length > 0) {
+      const err = new Error("Email đã tồn tại!");
+      err.statusCode = 401;
+      throw err;
+    }
+
+    const [name] = await db.execute(
+      `SELECT name FROM \`user\` WHERE \`name\` = ?`,
+      [user.name]
+    );
+    if (name.length > 0) {
+      const err = new Error("Tên người dùng đã tồn tại!");
+      err.statusCode = 401;
+      throw err;
+    }
+
+    await db.execute(
+      `INSERT INTO \`user\`(
+          \`id\`,
+          \`permission_id\`,
+          \`name\`,
+          \`email\`,
+          \`password\`
+      )
+        VALUES(
+            uuid(),
+            2,
+            '${user.name}',
+            '${user.email}',
+            '${user.password}'
+        )`
+    );
+
+    return {
+      code: 200,
+      message: "Đăng ký tài khoản manager thành công!",
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function login(user) {
   try {
     const [[rows]] = await db.execute(
@@ -123,7 +194,7 @@ async function login(user) {
   }
 }
 
-async function getUser(userId) {
+async function getUserById(userId) {
   try {
     const [rows] = await db.execute(
       `SELECT
@@ -145,6 +216,55 @@ async function getUser(userId) {
     throw error;
   }
 }
+async function getUser() {
+  try {
+    const [rows] = await db.execute(
+      `SELECT
+          \`id\`,
+          \`name\`,
+          \`gender\`,
+          \`avatar\`,
+          \`create_at\`
+      FROM
+          \`user\`
+      WHERE
+          permission_id = 3`
+    );
+    if (rows.length === 0) {
+      throw new Error("Người dùng không tồn tại");
+    }
+    return {
+      code: 200,
+      data: rows,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+async function getManager() {
+  try {
+    const [rows] = await db.execute(
+      `SELECT
+          \`id\`,
+          \`name\`,
+          \`create_at\`
+      FROM
+          \`user\`
+      WHERE
+          permission_id = 2`
+    );
+    if (rows.length === 0) {
+      throw new Error("Người dùng không tồn tại");
+    }
+    return {
+      code: 200,
+      data: rows,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
 function convertDate(dateString) {
   const [day, month, year] = dateString.split("/");
   return `${year}-${month}-${day}`;
@@ -258,16 +378,34 @@ async function changePassword(id, user) {
 
 async function deleteUser(id) {
   try {
+    await db.execute("START TRANSACTION");
+
     await db.execute(
-      `DELETE FROM \`user\`
-            WHERE \`id\` = '${id}'`
+      `DELETE FROM \`cart\` 
+       WHERE \`user_id\` = ?`,
+      [id]
     );
+
+    const [result] = await db.execute(
+      `DELETE FROM \`user\` 
+       WHERE \`id\` = ?`,
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      const err = new Error("Người dùng không tồn tại!");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    await db.execute("COMMIT");
 
     return {
       code: 200,
-      message: "Đã xoá người dùng khỏi hệ thống!",
+      message: "Đã xoá người dùng thành công!",
     };
   } catch (error) {
+    await db.execute("ROLLBACK");
     throw error;
   }
 }
@@ -275,8 +413,11 @@ async function deleteUser(id) {
 module.exports = {
   login,
   register,
+  resgisterManager,
   changePassword,
+  getUserById,
   getUser,
+  getManager,
   updateUser,
   deleteUser,
 };

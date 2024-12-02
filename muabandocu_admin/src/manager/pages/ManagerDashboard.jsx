@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
+import { formatDate } from "../../utils/Validation";
 import {
   fetchPendingProducts,
   approveProduct,
@@ -19,15 +19,6 @@ function ManagerDashboard() {
 
   const handleReject = (productId) => {
     handleRejectProduct(productId, setProducts);
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "có lỗi";
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
   };
 
   return (

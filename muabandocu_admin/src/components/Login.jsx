@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import axios from "axios";
-import Validation from "../utils/Validation";
+import { Validation } from "../utils/Validation";
 import { toast } from "react-toastify";
 function Login() {
   const [isSubmitted, setIsSubmitted] = useState(false);

@@ -8,8 +8,12 @@ import Login from "./components/Login";
 import NotFound from "./components/NotFound";
 import ProductDetail from "./manager/pages/ProductDetail";
 import AdminProductDetail from "./admin/pages/Productdetail";
-import Category from "./admin/pages/categories/Category";
-import AddCate from "./admin/pages/categories/AddCate";
+import Category from "./admin/pages/categoriespage/Category";
+import AddCate from "./admin/pages/categoriespage/AddCate";
+import EditCategory from "./admin/pages/categoriespage/EditCategory";
+import ManagerAccount from "./admin/pages/managerpage/ManagerAccount";
+import AddManager from "./admin/pages/managerpage/AddManager";
+import UserAccount from "./admin/pages/UserAccount";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -47,6 +51,10 @@ const App = () => {
           <Route path="product/:id" element={<AdminProductDetail />} />
           <Route path="/admin/category" element={<Category />} />
           <Route path="/admin/category/add" element={<AddCate />} />
+          <Route path="/admin/category/edit/:id" element={<EditCategory />} />
+          <Route path="/admin/managerAccount" element={<ManagerAccount />} />
+          <Route path="/admin/managerAccount/add" element={<AddManager />} />
+          <Route path="/admin/userAccount" element={<UserAccount />} />
         </Route>
       )}
 

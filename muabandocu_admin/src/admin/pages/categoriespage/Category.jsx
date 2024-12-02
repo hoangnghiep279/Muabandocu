@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchCategories } from "../../api/CategoryApi";
+import { fetchCategories, DeleteCategory } from "../../api/CategoryApi";
 import Loading from "../../../components/Loading";
 import { Link } from "react-router-dom";
 function Category() {
@@ -8,9 +8,15 @@ function Category() {
   useEffect(() => {
     fetchCategories(setCategories, setLoading);
   }, []);
+  const handleDelete = async (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa danh mục này không?")) {
+      await DeleteCategory(id);
+      fetchCategories(setCategories, setLoading);
+    }
+  };
   if (loading) return <Loading />;
   return (
-    <main className="p-5">
+    <main className="p-5 h-screen overflow-auto">
       <h1 className="text-2xl font-bold mb-4 "> Danh sách loại sản phẩm</h1>
       <table className="table-auto">
         <thead className="bg-gray-100 sticky top-0 z-10">
@@ -26,9 +32,12 @@ function Category() {
               <td className="border px-4 py-2">{category.name}</td>
 
               <td className="border px-4 py-2 text-center text-blue-600">
-                Sửa
+                <Link to={`/admin/category/edit/${category.id}`}>Sửa</Link>
               </td>
-              <td className="border px-4 py-2 text-center text-blue-600">
+              <td
+                className="border px-4 py-2 text-center text-blue-600 cursor-pointer"
+                onClick={() => handleDelete(category.id)}
+              >
                 Xóa
               </td>
             </tr>

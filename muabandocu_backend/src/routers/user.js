@@ -21,13 +21,23 @@ const upload = multer({ storage });
 
 router.post("/register", async (req, res, next) => {
   try {
-    console.log(req.body);
-
     res.json(await controller.register(req.body));
   } catch (error) {
     next(error);
   }
 });
+router.post(
+  "/registerManager",
+  checkLogin,
+  checkAdmin,
+  async (req, res, next) => {
+    try {
+      res.json(await controller.resgisterManager(req.body));
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.post("/login", async (req, res, next) => {
   try {
@@ -37,6 +47,20 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
+router.get("/", checkLogin, checkAdmin, async (req, res, next) => {
+  try {
+    res.json(await controller.getUser());
+  } catch (error) {
+    next(error);
+  }
+});
+router.get("/manager", checkLogin, checkAdmin, async (req, res, next) => {
+  try {
+    res.json(await controller.getManager());
+  } catch (error) {
+    next(error);
+  }
+});
 router.get("/profile", checkLogin, async (req, res, next) => {
   try {
     const userId = req.payload.id;
@@ -61,6 +85,14 @@ router.put("/:id", upload.single("avatar"), async (req, res, next) => {
 router.put("/change_password/:id", checkLogin, async (req, res, next) => {
   try {
     res.json(await controller.changePassword(req.params.id, req.body));
+  } catch (error) {
+    next(error);
+  }
+});
+router.delete("/:id", checkLogin, checkAdmin, async (req, res, next) => {
+  try {
+    const result = await controller.deleteUser(req.params.id);
+    res.json(result);
   } catch (error) {
     next(error);
   }
