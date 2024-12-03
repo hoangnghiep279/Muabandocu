@@ -50,21 +50,20 @@ router.get("/", async (req, res, next) => {
     next(error);
   }
 });
-
-// xem chi tiet
-router.get("/:id", async (req, res, next) => {
-  try {
-    res.json(await controller.getDetailProduct(req.params.id));
-  } catch (error) {
-    next(error);
-  }
-});
-
 // tim kiem san pham
 router.get("/search", async (req, res, next) => {
   try {
     const { keyword } = req.query;
     res.json(await controller.searchProduct(keyword));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// xem chi tiet
+router.get("/:id", async (req, res, next) => {
+  try {
+    res.json(await controller.getDetailProduct(req.params.id));
   } catch (error) {
     next(error);
   }

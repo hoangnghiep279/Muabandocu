@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import Button from "../components/Button";
+
 import Input from "../components/Input";
 import { marketBg } from "../imgs";
 import axios from "axios";
@@ -132,14 +132,9 @@ const Signin = () => {
           <p className="text-red-500 mt-2">{error.confirmPassword}</p>
         )}
         <div className="my-3"></div>
-        <Button
-          padding={"py-3"}
-          width="w-full"
-          fontSize="text-base"
-          type={"submit"}
-        >
+        <button className="css_button w-full" type="submit">
           Đăng ký
-        </Button>
+        </button>
         <div className="h-[1px] bg-[#181d1d] my-8 opacity-60 py"></div>
         <p className="flex justify-center items-center gap-1">
           Bạn đã có tài khoản?{" "}

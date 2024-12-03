@@ -5,7 +5,7 @@ import Card from "../components/Card";
 import Loading from "../components/Loading";
 import Productcard from "../components/Productcard";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { fetchProducts } from "../apis/ProductApi";
 import {
   MdKeyboardDoubleArrowRight,
   MdKeyboardDoubleArrowLeft,
@@ -17,22 +17,7 @@ const Home = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/products?page=${page}&limit=6`
-        );
-        setProducts(response.data.data);
-        setTotalPages(response.data.pages);
-        setLoading(false);
-      } catch (error) {
-        console.error("Lỗi khi lấy sản phẩm:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
+    fetchProducts(setProducts, setTotalPages, setLoading, page);
   }, [page]);
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) {

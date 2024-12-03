@@ -27,14 +27,14 @@ const images = [
 ];
 function Slideshow() {
   return (
-    <section className="py-8">
+    <section className="py-8 container">
       <div>
         <Swiper
           navigation
           pagination={{ type: "bullets" }}
           modules={[Navigation, Pagination, Autoplay]}
           autoplay={{ delay: 3000, disableOnInteraction: false }}
-          className="h-[600px] w-full rounded-lg"
+          className="h-[350px] w-full rounded-lg"
         >
           {images.map((image, index) => (
             <SwiperSlide key={index}>

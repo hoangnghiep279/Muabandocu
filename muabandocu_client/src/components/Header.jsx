@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { search, cart, profile, arrowUp } from "../imgs";
-import Button from "./Button";
+import axios from "axios";
 import { IoNotificationsOutline } from "react-icons/io5";
+import { SlArrowDown } from "react-icons/sl";
 const Header = () => {
   const [keyword, setKeyword] = useState("");
   const [error, setError] = useState("");
   const [login, setLogin] = useState(false);
-  const [displayDropdown, setDisplayDropdown] = useState("hidden");
-
+  const [categories, setCategories] = useState([]);
+  const [productDropdown, setProductDropdown] = useState("hidden");
+  const [profileDropdown, setProfileDropdown] = useState("hidden");
+  const navigate = useNavigate();
   useEffect(() => {
-    // Kiểm tra trạng thái đăng nhập khi render lại trang
     const token = localStorage.getItem("token");
     if (token) {
       setLogin(true);
     }
   }, []);
-
-  const navigate = useNavigate();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -28,13 +28,29 @@ const Header = () => {
     setError("");
     navigate(`/search?keyword=${encodeURIComponent(keyword)}`);
   };
-  const handleDropdown = (display) => {
-    setDisplayDropdown(display);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/category");
+        setCategories(response.data.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách danh sách:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+  const handleDropdownprofile = (display) => {
+    setProfileDropdown(display);
+  };
+  const handleDropdownproduct = (display) => {
+    setProductDropdown(display);
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    setLogin(false);
+    window.location.reload();
   };
 
   return (
@@ -80,13 +96,35 @@ const Header = () => {
                   Trang chủ
                 </NavLink>
               </li>
-              <li className="text-white py-1 px-8">
-                <NavLink
-                  to="/product"
-                  className={({ isActive }) => (isActive ? "font-bold" : "")}
+              <li className="relative py-1 px-8">
+                <span
+                  onMouseEnter={() => handleDropdownproduct("block")}
+                  onMouseLeave={() => handleDropdownproduct("hidden")}
+                  className="cursor-pointer flex items-center pb-3"
                 >
-                  Sản phẩm
-                </NavLink>
+                  Sản phẩm <SlArrowDown className="ml-2 text-sm" />
+                </span>
+                <div
+                  className={`${productDropdown} absolute top-8 left-0 bg-white rounded-lg overflow-hidden text-black w-48 shadow-lg z-10`}
+                  onMouseEnter={() => handleDropdownproduct("block")}
+                  onMouseLeave={() => handleDropdownproduct("hidden")}
+                >
+                  <ul>
+                    {categories.map((category) => (
+                      <li
+                        key={category.id}
+                        className="px-4 py-2 hover:bg-gray-200"
+                      >
+                        <NavLink
+                          to={`/product/category/${category.id}`}
+                          className="block"
+                        >
+                          {category.name}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </li>
               <li className="text-white py-1 px-8">
                 <NavLink
@@ -116,13 +154,13 @@ const Header = () => {
                   src={profile}
                   alt=""
                   className="pb-5"
-                  onMouseEnter={() => handleDropdown("block")}
-                  onMouseLeave={() => handleDropdown("hidden")}
+                  onMouseEnter={() => handleDropdownprofile("block")}
+                  onMouseLeave={() => handleDropdownprofile("hidden")}
                 />
                 <div
-                  className={`${displayDropdown}`}
-                  onMouseEnter={() => handleDropdown("block")}
-                  onMouseLeave={() => handleDropdown("hidden")}
+                  className={`${profileDropdown}`}
+                  onMouseEnter={() => handleDropdownprofile("block")}
+                  onMouseLeave={() => handleDropdownprofile("hidden")}
                 >
                   <div className="absolute top-8">
                     <img src={arrowUp} alt="" />
@@ -162,12 +200,12 @@ const Header = () => {
           </div>
         ) : (
           <div className="flex gap-4">
-            <Button text="text-sm" padding={"py-3 px-3"}>
+            <button className="text-sm css_button h-11 w-28">
               <NavLink to="/login">Đăng nhập</NavLink>
-            </Button>
-            <Button text="text-sm" padding={"py-3 px-5"}>
+            </button>
+            <button className="text-sm css_button h-11 w-28">
               <NavLink to="/signin">Đăng ký</NavLink>
-            </Button>
+            </button>
           </div>
         )}
       </div>

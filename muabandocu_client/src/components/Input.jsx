@@ -1,13 +1,15 @@
-const Input = ({ margin, placeholder, width, type, onChange, value, name }) => {
+const Input = (props) => {
   return (
-    <div className={`${width} h-11 border-2 ${margin} rounded-md px-2`}>
+    <div
+      className={`${props.width} h-11 border-2 ${props.margin} rounded-md px-2`}
+    >
       <input
-        name={name}
-        type={type}
+        name={props.name}
+        type={props.type}
         className="default-input w-full h-full"
-        placeholder={placeholder}
-        onChange={onChange}
-        value={value}
+        placeholder={props.placeholder}
+        onChange={props.onChange}
+        value={props.value}
       />
     </div>
   );

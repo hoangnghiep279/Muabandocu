@@ -1,8 +1,13 @@
+import { Link } from "react-router-dom";
+
 function Card({ img }) {
   return (
-    <div className="flex items-center justify-center w-[270px] h-[210px] bg-[#F1DEB4]">
-      <img src={img} alt="" />
-    </div>
+    <Link
+      to="/product"
+      className="flex items-center justify-center w-[170px] h-[140px] p-4 bg-[#F1DEB4]"
+    >
+      <img className="w-full h-full object-contain" src={img} alt="" />
+    </Link>
   );
 }
 

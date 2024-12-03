@@ -27,3 +27,18 @@
   background: #fff;
   box-shadow: 0px 16px 90px 0px rgba(0, 0, 0, 0.1);
 }
+.css_button {
+  color: #fff;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #181d1d;
+  border-radius: 6px;
+  font-weight: 500;
+  font-family: "Manrope", sans-serif;
+}
+.css_button:hover {
+  background: #c7dddd;
+  color: #131717;
+}

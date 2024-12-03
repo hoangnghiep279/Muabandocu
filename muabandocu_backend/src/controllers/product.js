@@ -150,21 +150,21 @@ async function searchProduct(keyword) {
 
   try {
     const [rows] = await db.execute(
-      `SELECT 
+      `SELECT
          p.id AS product_id,
          p.title,
          p.description,
          p.price,
-         p.quantity,
          p.status,
          i.img_url
-       FROM 
+       FROM
          product p
-       LEFT JOIN 
+       LEFT JOIN
          image i
-       ON 
+       ON
          p.id = i.product_id
-       WHERE 
+       WHERE
+         p.approved = 1 AND
          p.title LIKE ?`,
       [`%${keyword.toLowerCase()}%`]
     );

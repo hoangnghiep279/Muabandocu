@@ -5,6 +5,10 @@ const { signToken } = require("../helpers/token.js");
 const { validateEmail } = require("../validations/validateEmail");
 const { validatePhone } = require("../validations/validatePhone");
 const e = require("cors");
+const {
+  hashPassword,
+  comparePassword,
+} = require("../helpers/bcriptPassword.js");
 const uploadSingleImage = require("../helpers/uploadimg").uploadSingleImage;
 async function register(user) {
   try {
@@ -48,6 +52,7 @@ async function register(user) {
     const userId = userIdResult[0].userId;
     const [cartIdResult] = await db.execute("SELECT uuid() AS cartId");
     const cartId = cartIdResult[0].cartId;
+    const hashedPassword = await hashPassword(user.password);
 
     // Chèn vào bảng `user`
     await db.execute(
@@ -71,7 +76,7 @@ async function register(user) {
         ?,
         'resources/default-avatar.png'
       );`,
-      [userId, cartId, user.name, user.email, user.password]
+      [userId, cartId, user.name, user.email, hashedPassword]
     );
 
     // Chèn vào bảng `cart`
@@ -145,7 +150,7 @@ async function resgisterManager(user) {
             2,
             '${user.name}',
             '${user.email}',
-            '${user.password}'
+            '${hashPassword(user.password)}'
         )`
     );
 
@@ -161,11 +166,18 @@ async function resgisterManager(user) {
 async function login(user) {
   try {
     const [[rows]] = await db.execute(
-      `SELECT * FROM \`user\` WHERE \`email\` = ? AND \`password\` = ?`,
-      [user.email, user.password]
+      `SELECT * FROM \`user\` WHERE \`email\` = ?`,
+      [user.email]
     );
 
-    if (rows == null) {
+    if (!rows) {
+      const error = new Error("Thông tin tài khoản không tồn tại!");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const isPasswordMatch = await comparePassword(user.password, rows.password);
+    if (!isPasswordMatch) {
       const error = new Error(
         "Thông tin tài khoản hoặc mật khẩu không chính xác!"
       );
@@ -336,36 +348,46 @@ async function updateUser(userId, user, file) {
 
 async function changePassword(id, user) {
   try {
-    if (user.password == null || user.password == "") {
+    if (!user.password || user.password.trim() === "") {
       const error = new Error("Hãy nhập mật khẩu hiện tại của bạn!");
-      error.statusCode = 401;
+      error.statusCode = 400;
       throw error;
     }
 
-    if (user.newPassword == null || user.newPassword == "") {
+    if (!user.newPassword || user.newPassword.trim() === "") {
       const error = new Error("Mật khẩu mới không được để trống!");
-      error.statusCode = 401;
+      error.statusCode = 400;
       throw error;
     }
 
-    let [rows] = await db.execute(
-      `SELECT *
-          FROM \`user\`
-          WHERE \`id\`='${id}'
-          AND \`password\`='${user.password}'`
+    // Truy vấn lấy mật khẩu cũ từ cơ sở dữ liệu
+    const [[rows]] = await db.execute(
+      `SELECT \`password\` FROM \`user\` WHERE \`id\` = ?`,
+      [id]
     );
 
-    if (rows == null) {
+    if (!rows) {
+      const error = new Error("Người dùng không tồn tại!");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // So sánh mật khẩu hiện tại
+    const isPasswordMatch = await comparePassword(user.password, rows.password);
+    if (!isPasswordMatch) {
       const error = new Error("Mật khẩu cũ không chính xác!");
       error.statusCode = 401;
       throw error;
     }
 
-    await db.execute(
-      `UPDATE \`user\` 
-          SET \`password\`='${user.newPassword}'
-          WHERE \`id\` = '${id}';`
-    );
+    // Băm mật khẩu mới
+    const hashedPassword = await hashPassword(user.newPassword);
+
+    // Cập nhật mật khẩu mới
+    await db.execute(`UPDATE \`user\` SET \`password\` = ? WHERE \`id\` = ?`, [
+      hashedPassword,
+      id,
+    ]);
 
     return {
       code: 200,

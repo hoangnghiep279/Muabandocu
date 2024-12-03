@@ -5,6 +5,8 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import { IoAddOutline } from "react-icons/io5";
 import { FiMinus } from "react-icons/fi";
 import { BsCartPlus } from "react-icons/bs";
+import Loading from "../components/Loading";
+import { fetchProductDetail } from "../apis/ProductApi";
 const ProductDetail = () => {
   const { id } = useParams(); // Lấy id sản phẩm từ URL
   const [product, setProduct] = useState(null);
@@ -14,31 +16,17 @@ const ProductDetail = () => {
   const [description, setDescription] = useState("");
   const [isSeeMore, setIsSeeMore] = useState(false);
 
-  const MAX_LINES = 10;
+  const MAX_LINES = 7;
 
   useEffect(() => {
-    const fetchProductDetail = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/products/${id}`
-        );
-
-        setProduct(response.data.data);
-        setMainImg("http://localhost:3000/" + response.data.data.images[0]);
-        setDescription(
-          response.data.data.description
-            .split("\n")
-            .slice(0, MAX_LINES)
-            .join("\n")
-        );
-        setLoading(false);
-      } catch (error) {
-        console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchProductDetail();
+    fetchProductDetail(
+      setProduct,
+      setMainImg,
+      setDescription,
+      MAX_LINES,
+      setLoading,
+      id
+    );
   }, [id]);
 
   const increaseQuantity = () => {
@@ -55,7 +43,7 @@ const ProductDetail = () => {
     }
   };
 
-  if (loading) return <p>Đang tải...</p>;
+  if (loading) return <Loading />;
   if (!product) return <p>Không tìm thấy sản phẩm</p>;
 
   return (

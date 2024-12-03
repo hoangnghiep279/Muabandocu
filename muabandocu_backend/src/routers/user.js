@@ -70,6 +70,13 @@ router.get("/profile", checkLogin, async (req, res, next) => {
     next(error);
   }
 });
+router.put("/change_password", checkLogin, async (req, res, next) => {
+  try {
+    res.json(await controller.changePassword(req.payload.id, req.body));
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.put("/:id", upload.single("avatar"), async (req, res, next) => {
   try {
@@ -82,13 +89,6 @@ router.put("/:id", upload.single("avatar"), async (req, res, next) => {
   }
 });
 
-router.put("/change_password/:id", checkLogin, async (req, res, next) => {
-  try {
-    res.json(await controller.changePassword(req.params.id, req.body));
-  } catch (error) {
-    next(error);
-  }
-});
 router.delete("/:id", checkLogin, checkAdmin, async (req, res, next) => {
   try {
     const result = await controller.deleteUser(req.params.id);

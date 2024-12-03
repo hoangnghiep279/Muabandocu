@@ -1,5 +1,4 @@
 import React from "react";
-import Button from "./Button";
 import { hideSensitiveInfo } from "../utils/hideSensitiveInfo";
 function Profile({ user }) {
   const phone =

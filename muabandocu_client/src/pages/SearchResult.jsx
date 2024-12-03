@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
 import Productcard from "../components/Productcard";
+import { fetchSearchProduct } from "../apis/ProductApi";
 const SearchResult = () => {
   const location = useLocation();
   const [products, setProducts] = useState([]);
@@ -11,28 +11,10 @@ const SearchResult = () => {
   const keyword = new URLSearchParams(location.search).get("keyword");
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        // Giả sử API trả về dữ liệu dưới dạng bạn cung cấp
-        const response = await axios.get(
-          "http://localhost:3000/products/search",
-          {
-            params: { keyword },
-          }
-        );
-
-        if (response.data.code === 200) {
-          setProducts(response.data.data);
-        } else {
-          setError("Không tìm thấy sản phẩm.");
-        }
-      } catch (err) {
-        setError("Đã xảy ra lỗi khi tìm kiếm sản phẩm.");
-      }
-    };
+    fetchSearchProduct(setProducts, setError, keyword);
 
     if (keyword) {
-      fetchProducts();
+      fetchSearchProduct(setProducts, setError, keyword);
     }
   }, [keyword]);
 

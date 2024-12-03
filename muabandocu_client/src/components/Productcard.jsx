@@ -20,18 +20,15 @@ function Productcard({ product }) {
       </div>
       <div className="box-shadow p-3">
         <NavLink to={`/product/${product.product_id || product.id}`}>
-          <h3 className="text-xl font-semibold w-full mt-4 text-primaryColor">
-            {product.title}
-          </h3>
+          <h3 className="text-xl font-semibold w-full mt-4">{product.title}</h3>
         </NavLink>
-        <div className="flex justify-between items-center my-3">
+        <p className="text-right my-3">{product.category_name}</p>
+        <div className="flex justify-between items-center my-4">
           <div className="flex items-center gap-2">
             <img src={rate} alt="" />
             <span className="text-lg font-light">5.0</span>
           </div>
-          <p className="text-lg font-medium text-primaryColor">
-            {product.price} đ
-          </p>
+          <p className="text-lg font-medium">{product.price} đ</p>
         </div>
         <button className="w-full border bg-[#005d6312] border-primaryColor py-2 px-5 text-primaryColor flex-center gap-2 text-lg hover:opacity-90">
           <BsCartPlus /> Thêm giỏ hàng
