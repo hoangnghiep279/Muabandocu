@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { search, cart, profile, arrowUp } from "../imgs";
 import axios from "axios";
 import { IoNotificationsOutline } from "react-icons/io5";
@@ -50,7 +50,7 @@ const Header = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.reload();
+    navigate("/login");
   };
 
   return (
@@ -97,13 +97,14 @@ const Header = () => {
                 </NavLink>
               </li>
               <li className="relative py-1 px-8">
-                <span
+                <Link
+                  to={"/product"}
                   onMouseEnter={() => handleDropdownproduct("block")}
                   onMouseLeave={() => handleDropdownproduct("hidden")}
                   className="cursor-pointer flex items-center pb-3"
                 >
                   Sản phẩm <SlArrowDown className="ml-2 text-sm" />
-                </span>
+                </Link>
                 <div
                   className={`${productDropdown} absolute top-8 left-0 bg-white rounded-lg overflow-hidden text-black w-48 shadow-lg z-10`}
                   onMouseEnter={() => handleDropdownproduct("block")}

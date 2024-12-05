@@ -1,5 +1,6 @@
 import axios from "axios";
 
+//BREADCRUMB
 const fetchProductTitle = async (setProductTitle, id) => {
   try {
     const response = await axios.get(`http://localhost:3000/products/${id}`);
@@ -7,8 +8,9 @@ const fetchProductTitle = async (setProductTitle, id) => {
   } catch (error) {
     console.error("Lỗi khi lấy tên sản phẩm:", error);
   }
-}; //BREADCRUMB
+};
 
+//TRANG SẢN PHẨM CHI TIẾT
 const fetchProductDetail = async (
   setProduct,
   setMainImg,
@@ -30,8 +32,9 @@ const fetchProductDetail = async (
     console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
     setLoading(false);
   }
-}; //TRANG SẢN PHẨM CHI TIẾT
+};
 
+//HOME
 const fetchProducts = async (setProducts, setTotalPages, setLoading, page) => {
   setLoading(true);
   try {
@@ -47,6 +50,36 @@ const fetchProducts = async (setProducts, setTotalPages, setLoading, page) => {
   }
 };
 
+//TRANG PRODUCT
+const fetchProductsCategory = async (
+  setProducts,
+  setTotalPages,
+  setLoading,
+  page,
+  categoryId
+) => {
+  setLoading(true);
+  try {
+    const response = await axios.get("http://localhost:3000/products", {
+      params: {
+        page,
+        limit: 9,
+        categoryId, // Truyền `categoryId` vào như một tham số trong query string (nếu có)
+      },
+    });
+
+    setProducts(response.data.data || []);
+    setTotalPages(response.data.pages || 1);
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm:", error);
+    setProducts([]); // Xử lý khi gặp lỗi (trả về mảng rỗng)
+    setTotalPages(1); // Tổng số trang mặc định là 1
+  } finally {
+    setLoading(false); // Set lại trạng thái loading khi kết thúc
+  }
+};
+
+//TÌM KIẾM SẢN PHẨM
 const fetchSearchProduct = async (setProducts, setError, keyword) => {
   try {
     const response = await axios.get("http://localhost:3000/products/search", {
@@ -61,10 +94,11 @@ const fetchSearchProduct = async (setProducts, setError, keyword) => {
   } catch (err) {
     setError("Đã xảy ra lỗi khi tìm kiếm sản phẩm.");
   }
-}; //TÌM KIẾM SẢN PHẨM
+};
 
 export {
   fetchProducts,
+  fetchProductsCategory,
   fetchProductTitle,
   fetchProductDetail,
   fetchSearchProduct,

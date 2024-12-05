@@ -1,13 +1,13 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Loading from "../components/Loading";
 import { FaRegUser } from "react-icons/fa6";
 import { BsHandbag } from "react-icons/bs";
 import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
 import { MdOutlineNotifications } from "react-icons/md";
 import Profile from "../components/Profile";
-
+import { getProfile } from "../apis/UserApi";
+import { NavLink } from "react-router-dom";
 function Account() {
   const [user, setUser] = useState(null);
 
@@ -19,22 +19,7 @@ function Account() {
         return;
       }
 
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/users/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setUser(response.data.data);
-      } catch (error) {
-        console.error(
-          "Lỗi khi lấy thông tin người dùng:",
-          error.response.data.message || error.message
-        );
-      }
+      getProfile(setUser, token);
     };
 
     fetchUserData();
@@ -76,7 +61,9 @@ function Account() {
               <span className="flex items-center gap-2 font-medium">
                 <BsHandbag /> Quản lý sản phẩm
               </span>
-              <li className="text-sm ml-7 opacity-80 mt-3">Thêm sản phẩm</li>
+              <button className="text-sm ml-7 opacity-80 mt-3">
+                Thêm sản phẩm
+              </button>
             </li>
             <li>
               <span className="flex items-center gap-2 font-medium">

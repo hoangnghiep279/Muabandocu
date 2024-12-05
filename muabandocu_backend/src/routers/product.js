@@ -42,10 +42,11 @@ router.post(
 // xem sản phẩm đã duyệt
 router.get("/", async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const result = await controller.getProducts(page, limit);
-    res.json(result);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const categoryId = req.query.categoryId ? req.query.categoryId : null;
+
+    res.status(200).json(await controller.getProducts(page, limit, categoryId));
   } catch (error) {
     next(error);
   }

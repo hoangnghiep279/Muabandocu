@@ -260,12 +260,66 @@ async function approveProduct(productId) {
   }
 }
 
-async function getProducts(page = 1, limit = 10) {
+// async function getProducts(page = 1, limit = 10) {
+//   try {
+//     const offset = (page - 1) * limit;
+
+//     const [productRows] = await db.execute(
+//       `SELECT
+//         p.id,
+//         p.user_id,
+//         p.category_id,
+//         p.title,
+//         p.price,
+//         p.warranty,
+//         p.approved,
+//         c.name AS category_name
+//       FROM
+//         product p
+//       JOIN
+//         category c ON p.category_id = c.id
+//       WHERE
+//         p.approved = 1
+//       LIMIT ? OFFSET ?`,
+//       [limit, offset]
+//     );
+//     const [imageRows] = await db.execute(
+//       `SELECT product_id, img_url
+//        FROM image`
+//     );
+//     const products = productRows.map((product) => {
+//       const images = imageRows.filter(
+//         (image) => image.product_id === product.id
+//       );
+//       return {
+//         ...product,
+//         image: images,
+//       };
+//     });
+//     const [totalResult] = await db.execute(
+//       `SELECT COUNT(*) AS total FROM \`product\``
+//     );
+//     const total = totalResult[0].total;
+
+//     return {
+//       code: 200,
+//       data: products,
+//       total,
+//       pages: Math.ceil(total / limit), // Tổng số trang
+//       currentPage: page,
+//     };
+//   } catch (error) {
+//     throw error;
+//   }
+// }
+
+async function getProducts(page = 1, limit = 10, categoryId = null) {
   try {
     const offset = (page - 1) * limit;
 
-    const [productRows] = await db.execute(
-      `SELECT
+    // Tạo câu truy vấn chính
+    let productQuery = `
+      SELECT
         p.id,
         p.user_id,
         p.category_id,
@@ -280,39 +334,59 @@ async function getProducts(page = 1, limit = 10) {
         category c ON p.category_id = c.id
       WHERE
         p.approved = 1
-      LIMIT ? OFFSET ?`,
-      [limit, offset]
-    );
+    `;
+    const queryParams = [];
+
+    // Thêm điều kiện lọc categoryId nếu có
+    if (categoryId) {
+      productQuery += ` AND p.category_id = ?`;
+      queryParams.push(categoryId);
+    }
+
+    // Phân trang
+    productQuery += ` LIMIT ? OFFSET ?`;
+    queryParams.push(limit, offset);
+
+    // Thực thi câu truy vấn
+    const [productRows] = await db.execute(productQuery, queryParams);
+
+    // Lấy ảnh cho từng sản phẩm
     const [imageRows] = await db.execute(
-      `SELECT product_id, img_url 
-       FROM image`
+      `SELECT product_id, img_url FROM image`
     );
+
+    // Gộp ảnh với thông tin sản phẩm
     const products = productRows.map((product) => {
-      const images = imageRows.filter(
-        (image) => image.product_id === product.id
-      );
-      return {
-        ...product,
-        image: images,
-      };
+      const images = imageRows
+        .filter((image) => image.product_id === product.id)
+        .map((image) => image.img_url); // Chỉ lấy URL ảnh
+      return { ...product, images };
     });
-    const [totalResult] = await db.execute(
-      `SELECT COUNT(*) AS total FROM \`product\``
-    );
+
+    // Đếm tổng số sản phẩm
+    let totalQuery = `SELECT COUNT(*) AS total FROM product WHERE approved = 1`;
+    const totalQueryParams = [];
+
+    if (categoryId) {
+      totalQuery += ` AND category_id = ?`;
+      totalQueryParams.push(categoryId);
+    }
+
+    const [totalResult] = await db.execute(totalQuery, totalQueryParams);
     const total = totalResult[0].total;
 
     return {
       code: 200,
       data: products,
       total,
-      pages: Math.ceil(total / limit), // Tổng số trang
+      pages: Math.ceil(total / limit),
       currentPage: page,
     };
   } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm:", error);
     throw error;
   }
 }
-
 async function getDetailProduct(productId) {
   try {
     const [productRows] = await db.execute(

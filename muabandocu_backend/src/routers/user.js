@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
+// Đăng ký
 router.post("/register", async (req, res, next) => {
   try {
     res.json(await controller.register(req.body));
@@ -26,6 +26,7 @@ router.post("/register", async (req, res, next) => {
     next(error);
   }
 });
+// Đăng ký manager
 router.post(
   "/registerManager",
   checkLogin,
@@ -38,7 +39,7 @@ router.post(
     }
   }
 );
-
+// Đăng nhập
 router.post("/login", async (req, res, next) => {
   try {
     res.json(await controller.login(req.body));
@@ -46,7 +47,7 @@ router.post("/login", async (req, res, next) => {
     next(error);
   }
 });
-
+// Danh sách nguoi dung
 router.get("/", checkLogin, checkAdmin, async (req, res, next) => {
   try {
     res.json(await controller.getUser());
@@ -54,6 +55,7 @@ router.get("/", checkLogin, checkAdmin, async (req, res, next) => {
     next(error);
   }
 });
+// Danh sach manager
 router.get("/manager", checkLogin, checkAdmin, async (req, res, next) => {
   try {
     res.json(await controller.getManager());
@@ -61,15 +63,36 @@ router.get("/manager", checkLogin, checkAdmin, async (req, res, next) => {
     next(error);
   }
 });
+// Thong tin nguoi dung
 router.get("/profile", checkLogin, async (req, res, next) => {
   try {
     const userId = req.payload.id;
-    const user = await controller.getUser(userId);
+    const user = await controller.getUserById(userId);
     res.status(200).json({ data: user });
   } catch (error) {
     next(error);
   }
 });
+// Cap nhat nguoi dung
+router.put(
+  "/profile",
+  checkLogin,
+  upload.single("avatar"),
+  async (req, res, next) => {
+    try {
+      const user = req.body;
+      const result = await controller.updateUser(
+        req.payload.id,
+        user,
+        req.file
+      );
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+// Doi mat khau
 router.put("/change_password", checkLogin, async (req, res, next) => {
   try {
     res.json(await controller.changePassword(req.payload.id, req.body));
@@ -77,18 +100,7 @@ router.put("/change_password", checkLogin, async (req, res, next) => {
     next(error);
   }
 });
-
-router.put("/:id", upload.single("avatar"), async (req, res, next) => {
-  try {
-    const user = req.body;
-    console.log(req.file);
-    const result = await controller.updateUser(req.params.id, user, req.file);
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
+// Xoa nguoi dung
 router.delete("/:id", checkLogin, checkAdmin, async (req, res, next) => {
   try {
     const result = await controller.deleteUser(req.params.id);

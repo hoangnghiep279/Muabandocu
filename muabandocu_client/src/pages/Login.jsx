@@ -8,6 +8,7 @@ import { marketBg } from "../imgs";
 import axios from "axios";
 import Validation from "../utils/Validation";
 import { toast } from "react-toastify";
+import { loginUser } from "../apis/UserApi";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,34 +44,7 @@ const Login = () => {
       return;
     }
 
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/api/users/login",
-        {
-          email: values.email,
-          password: values.password,
-        }
-      );
-
-      if (response && response.data.data && response.data.data.token) {
-        localStorage.setItem("token", response.data.data.token);
-        toast("Đăng nhập thành công", { type: "success" });
-        navigate("/");
-      } else {
-        toast("Token không hợp lệ", { type: "error" });
-      }
-    } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        toast(error.response.data.message, { type: "error" });
-        setError({ serverError: error.response.data.message });
-      } else {
-        toast("Đăng nhập thất bại", { type: "error" });
-      }
-    }
+    loginUser(values, setError, navigate);
   };
 
   const labelStyle = "font-light opacity-80 text-lg my-2";

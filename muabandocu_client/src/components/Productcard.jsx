@@ -2,15 +2,19 @@ import React from "react";
 import { rate } from "../imgs";
 import { NavLink } from "react-router-dom";
 import { BsCartPlus } from "react-icons/bs";
+
 function Productcard({ product }) {
+  // Kiểm tra nếu product.images tồn tại và có ít nhất một hình ảnh
+  const hasImages = product.images && product.images.length > 0;
+
   return (
     <div className="font-manropew w-[370px]">
       <div className="w-full h-[310px] rounded-t-xl overflow-hidden">
-        {product.image.length > 0 ? (
+        {hasImages ? (
           <NavLink to={`/product/${product.product_id || product.id}`}>
             <img
-              className="w-full h-full object-cover  hover:scale-105 transition duration-300 ease-in-out"
-              src={`http://localhost:3000/${product.image[0]?.img_url}`}
+              className="w-full h-full object-cover hover:scale-105 transition duration-300 ease-in-out"
+              src={`http://localhost:3000/${product.images[0]}`}
               alt={product.title}
             />
           </NavLink>

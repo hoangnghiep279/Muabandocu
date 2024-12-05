@@ -5,9 +5,8 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 import Input from "../components/Input";
 import { marketBg } from "../imgs";
-import axios from "axios";
 import Validation from "../utils/Validation";
-import { ToastContainer, toast } from "react-toastify";
+import { registerUser } from "../apis/UserApi";
 const Signin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -40,24 +39,7 @@ const Signin = () => {
       return;
     }
 
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/api/users/register",
-        {
-          name: values.name,
-          email: values.email,
-          password: values.password,
-        }
-      );
-      toast("Đăng ký tài khoản thanh cong", { type: "success" });
-      navigate("/login");
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        setError({ email: "Email đã tồn tại. Vui lòng chọn email khác." });
-      } else {
-        setError(Validation(values));
-      }
-    }
+    registerUser(values, setError, navigate);
   };
   const handleClickPassword = () => {
     setShowPassword((showPassword) => !showPassword);
@@ -132,7 +114,7 @@ const Signin = () => {
           <p className="text-red-500 mt-2">{error.confirmPassword}</p>
         )}
         <div className="my-3"></div>
-        <button className="css_button w-full" type="submit">
+        <button className="css_button h-11 w-full" type="submit">
           Đăng ký
         </button>
         <div className="h-[1px] bg-[#181d1d] my-8 opacity-60 py"></div>

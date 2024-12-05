@@ -228,6 +228,7 @@ async function getUserById(userId) {
     throw error;
   }
 }
+
 async function getUser() {
   try {
     const [rows] = await db.execute(
@@ -297,8 +298,6 @@ async function updateUser(userId, user, file) {
       throw error;
     }
 
-    const formattedBirthday = user.birthday ? convertDate(user.birthday) : null;
-
     const [rows] = await db.execute(
       `SELECT \`avatar\` FROM \`user\` WHERE \`id\` = ?`,
       [userId]
@@ -329,7 +328,6 @@ async function updateUser(userId, user, file) {
       SET
         \`name\` = '${user.name}',
         \`gender\` = ${user.gender ?? null},
-        \`birthday\` = ${formattedBirthday ? `'${formattedBirthday}'` : null},
         \`email\` = '${user.email}',
         \`avatar\` = '${avatarUrl}', 
         \`phone\` = ${user.phone ? `'${user.phone}'` : null}

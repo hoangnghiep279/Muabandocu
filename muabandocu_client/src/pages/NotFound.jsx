@@ -6,7 +6,7 @@ function NotFound() {
       <h1 className="text-9xl font-bold text-primaryColor">404</h1>
       <p className="text-3xl mt-4">Page Not Found</p>
       <p className="text-lg mt-2">
-        The page you are looking for doesn't exist or an error occurred.
+        Không thể tải trang này. Vui lòng thử lại hoặc đăng nhập tài khoản
       </p>
       <a
         href="/"

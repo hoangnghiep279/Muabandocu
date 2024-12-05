@@ -30,9 +30,8 @@ function Slideshow() {
     <section className="py-8 container">
       <div>
         <Swiper
-          navigation
           pagination={{ type: "bullets" }}
-          modules={[Navigation, Pagination, Autoplay]}
+          modules={[Pagination, Autoplay]}
           autoplay={{ delay: 3000, disableOnInteraction: false }}
           className="h-[350px] w-full rounded-lg"
         >
