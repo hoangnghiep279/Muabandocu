@@ -4,7 +4,6 @@ import { NavLink } from "react-router-dom";
 import { BsCartPlus } from "react-icons/bs";
 
 function Productcard({ product }) {
-  // Kiểm tra nếu product.images tồn tại và có ít nhất một hình ảnh
   const hasImages = product.images && product.images.length > 0;
 
   return (
@@ -19,7 +18,7 @@ function Productcard({ product }) {
             />
           </NavLink>
         ) : (
-          <p className="text-center">Không có hình ảnh</p> // Xử lý nếu không có ảnh
+          <p className="text-center">Không có hình ảnh</p>
         )}
       </div>
       <div className="box-shadow p-3">

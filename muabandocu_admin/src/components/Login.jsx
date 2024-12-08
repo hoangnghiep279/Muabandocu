@@ -1,10 +1,9 @@
-import React, { useEffect } from "react";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import axios from "axios";
 import { Validation } from "../utils/Validation";
 import { toast } from "react-toastify";
+
 function Login() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState({});
@@ -13,6 +12,7 @@ function Login() {
     email: "",
     password: "",
   });
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -24,12 +24,14 @@ function Login() {
       }
     }
   }, [navigate]);
+
   const handleInput = (e) => {
     const { name, value } = e.target;
     setValue({ ...values, [name]: value });
 
     if (isSubmitted) {
-      setError(Validation({ ...values, [name]: value }));
+      const fieldError = Validation({ ...values, [name]: value }, [name]);
+      setError((prevErrors) => ({ ...prevErrors, ...fieldError }));
     }
   };
 
@@ -37,7 +39,7 @@ function Login() {
     e.preventDefault();
     setIsSubmitted(true);
 
-    const validationErrors = Validation(values);
+    const validationErrors = Validation(values, ["email", "password"]);
     setError(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -55,31 +57,28 @@ function Login() {
 
       if (response && response.data.data) {
         const { token, permission } = response.data.data;
+
         localStorage.setItem("token", token);
         localStorage.setItem("permission", permission);
 
-        toast("Đăng nhập thành công", { type: "success" });
+        toast.success("Đăng nhập thành công");
 
         if (permission === 1) {
           navigate("/admin");
-          window.location.reload();
         } else if (permission === 2) {
           navigate("/manager");
-          window.location.reload();
         }
+
+        window.location.reload();
       } else {
-        toast("Thông tin đăng nhập không hợp lệ", { type: "error" });
+        toast.error("Thông tin đăng nhập không hợp lệ");
       }
-    } catch (error) {
-      if (error.response && error.response.data.message) {
-        toast(error.response.data.message, { type: "error" });
-        setError({ serverError: error.response.data.message });
-      } else {
-        toast("Đăng nhập thất bại", { type: "error" });
-      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "Đăng nhập thất bại";
+      toast.error(errorMessage);
+      setError({ serverError: errorMessage });
     }
   };
-
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
       <div className="bg-white rounded-lg shadow-lg p-8 w-1/3">

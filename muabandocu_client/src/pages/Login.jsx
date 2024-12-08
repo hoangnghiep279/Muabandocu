@@ -5,9 +5,7 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 import Input from "../components/Input";
 import { marketBg } from "../imgs";
-import axios from "axios";
-import Validation from "../utils/Validation";
-import { toast } from "react-toastify";
+import { Validation } from "../utils/Validation";
 import { loginUser } from "../apis/UserApi";
 
 const Login = () => {
@@ -22,11 +20,13 @@ const Login = () => {
 
   const handleInput = (e) => {
     const { name, value } = e.target;
-
-    setValue({ ...values, [name]: value });
+    setValue((prevValues) => ({ ...prevValues, [name]: value }));
 
     if (isSubmitted) {
-      setError(Validation({ ...values, [name]: value }));
+      setError((prevErrors) => ({
+        ...prevErrors,
+        [name]: Validation({ ...values, [name]: value }, [name])[name],
+      }));
     }
   };
 
@@ -37,9 +37,8 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsSubmitted(true);
-    const validationErrors = Validation(values);
+    const validationErrors = Validation(values, ["email", "password"]);
     setError(validationErrors);
-
     if (Object.keys(validationErrors).length > 0) {
       return;
     }
@@ -69,7 +68,6 @@ const Login = () => {
           name="email"
           onChange={handleInput}
         />
-        {/* chỉ hiện lỗi sau khi ấn submit */}
         {isSubmitted && error.email && (
           <p className="text-red-500 mt-2">{error.email}</p>
         )}

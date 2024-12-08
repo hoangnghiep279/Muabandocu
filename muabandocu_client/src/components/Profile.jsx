@@ -24,7 +24,7 @@ function Profile({ user }) {
       formDataToSend.append("gender", formData.gender);
       formDataToSend.append("avatar", formData.avatar);
 
-      const result = await updateUser(user.id, formDataToSend);
+      const result = await updateUser(formDataToSend);
       alert(result.message);
       window.location.reload();
     } catch (error) {
@@ -84,7 +84,7 @@ function Profile({ user }) {
         </>
       ) : (
         <div>
-          <h2 className="text-lg mb-1">Chỉnh sửa hồ sơ</h2>
+          <h2 className="text-lg my-4 ">Chỉnh sửa hồ sơ</h2>
           <div className="flex flex-col gap-4">
             <input
               type="text"

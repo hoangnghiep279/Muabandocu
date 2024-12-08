@@ -1,6 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
-import Validation from "../utils/Validation";
+import { Validation } from "../utils/Validation";
 const registerUser = async (values, setError, navigate) => {
   try {
     const response = await axios.post(
@@ -65,7 +65,7 @@ const getProfile = async (setUser, token) => {
   }
 };
 
-const updateUser = async (userId, formData) => {
+const updateUser = async (formData) => {
   const token = localStorage.getItem("token");
   const response = await axios.put(
     `http://localhost:3000/api/users/profile`,
@@ -79,4 +79,19 @@ const updateUser = async (userId, formData) => {
   );
   return response.data;
 };
-export { registerUser, loginUser, getProfile, updateUser };
+
+const changePassword = async (data) => {
+  const token = localStorage.getItem("token");
+  const response = await axios.put(
+    `http://localhost:3000/api/users/change_password`,
+    data,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+export { registerUser, loginUser, getProfile, updateUser, changePassword };

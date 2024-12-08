@@ -4,10 +4,11 @@ const path = require("path");
 const uploadMultipleImages =
   require("../helpers/uploadimg").uploadMultipleImages;
 
-async function insertProduct(products, files) {
+async function insertProduct(products, files, userId) {
   try {
     const [ExistingTitle] = await db.execute(
-      `SELECT title FROM product WHERE title = '${products.title}'`
+      `SELECT title FROM product WHERE title = ? AND user_id = ?`,
+      [products.title, userId]
     );
     if (ExistingTitle.length > 0) {
       const err = new Error("Tên sản phẩm đã có trong hệ thống!");
@@ -15,36 +16,49 @@ async function insertProduct(products, files) {
       throw err;
     }
 
-    // Tạo ID cho sản phẩm
+    // Check categoryId instead of categoryName
+    const [category] = await db.execute(
+      `SELECT id FROM category WHERE id = ?`, // Use ID directly
+      [products.categoryId]
+    );
+
+    if (category.length === 0) {
+      const err = new Error("Loại sản phẩm không hợp lệ!");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const categoryId = category[0].id;
+
     const [productResult] = await db.execute("SELECT uuid() AS productId");
     const productId = productResult[0].productId;
 
     await db.execute(
       `INSERT INTO \`product\`(
-          \`id\`,
-          \`user_id\`,
-          \`category_id\`,
-          \`title\`,
-          \`linkzalo\`,
-          \`description\`,
-          \`price\`,
-          \`warranty\`,
-          \`shipfee\`,
-          \`status\`,
-          \`approved\`
-      ) 
-       VALUES (
-        '${productId}',
-        '${products.userId}',
-        '${products.categoryId}',
-        '${products.title}',
-        '${products.linkzalo}',
-        '${products.description}',
-        '${products.price}',
-        '${products.warranty}',
-        '${products.shipfee}',
-        0,
-        0)`
+              \`id\`,
+              \`user_id\`,
+              \`category_id\`,
+              \`title\`,
+              \`linkzalo\`,
+              \`description\`,
+              \`price\`,
+              \`warranty\`,
+              \`shipfee\`,
+              \`status\`,
+              \`approved\`
+          ) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)`,
+      [
+        productId,
+        userId,
+        categoryId,
+        products.title,
+        products.linkzalo,
+        products.description,
+        products.price,
+        products.warranty,
+        products.shipfee,
+      ]
     );
 
     if (files && files.length > 0) {
@@ -54,7 +68,7 @@ async function insertProduct(products, files) {
       const imageInserts = imageUrls.map((imageUrl) => {
         return db.execute(
           `INSERT INTO \`image\` (\`id\`, \`product_id\`, \`img_url\`)
-               VALUES (uuid(), ?, ?)`,
+                   VALUES (uuid(), ?, ?)`,
           [productId, imageUrl]
         );
       });
@@ -66,14 +80,16 @@ async function insertProduct(products, files) {
       message: "Thêm sản phẩm thành công! Đang chờ duyệt từ quản trị viên",
     };
   } catch (error) {
+    console.error(error);
     throw error;
   }
 }
-async function updateProduct(productId, product, files) {
+
+async function updateProduct(productId, userId, product, files) {
   try {
     const [existingProduct] = await db.execute(
       `SELECT id FROM product WHERE id = ? AND user_id = ? AND approved = 0`,
-      [productId, product.user_id]
+      [productId, userId]
     );
 
     if (existingProduct.length === 0) {
@@ -82,22 +98,19 @@ async function updateProduct(productId, product, files) {
       throw err;
     }
 
-    const [categories] = await db.execute(
-      `SELECT id, name FROM category ORDER BY name`
-    );
-
     await db.execute(
-      `UPDATE product 
-       SET category_id = ?, title = ?, linkzalo = ?, description = ?, price = ?, warranty = ?, shipfee = ?
+      `UPDATE product
+       SET user_id = ?, category_id = ?, title = ?, linkzalo = ?, description = ?, price = ?, warranty = ?, shipfee = ?
        WHERE id = ?`,
       [
-        product.category_id,
-        product.title,
-        product.linkzalo,
-        product.description,
-        product.price,
-        product.warranty,
-        product.shipfee,
+        userId,
+        product.category_id || null,
+        product.title || null,
+        product.linkzalo || null,
+        product.description || null,
+        product.price || null,
+        product.warranty || null,
+        product.shipfee || null,
         productId,
       ]
     );
@@ -176,25 +189,19 @@ async function searchProduct(keyword) {
     const products = rows.reduce((acc, row) => {
       const product = acc.find((p) => p.product_id === row.product_id);
       if (product) {
-        product.image.push({
-          product_id: row.product_id,
-          img_url: row.img_url,
-        });
+        product.images.push(row.img_url);
       } else {
         acc.push({
           product_id: row.product_id,
           title: row.title,
           description: row.description,
           price: row.price,
-          quantity: row.quantity,
           status: row.status,
-          image: row.img_url
-            ? [{ product_id: row.product_id, img_url: row.img_url }]
-            : [],
+          images: row.img_url ? [row.img_url] : [],
         });
       }
       return acc;
-    }, []); // gan acc = 1 mang
+    }, []);
 
     return {
       code: 200,
@@ -259,59 +266,6 @@ async function approveProduct(productId) {
     throw error;
   }
 }
-
-// async function getProducts(page = 1, limit = 10) {
-//   try {
-//     const offset = (page - 1) * limit;
-
-//     const [productRows] = await db.execute(
-//       `SELECT
-//         p.id,
-//         p.user_id,
-//         p.category_id,
-//         p.title,
-//         p.price,
-//         p.warranty,
-//         p.approved,
-//         c.name AS category_name
-//       FROM
-//         product p
-//       JOIN
-//         category c ON p.category_id = c.id
-//       WHERE
-//         p.approved = 1
-//       LIMIT ? OFFSET ?`,
-//       [limit, offset]
-//     );
-//     const [imageRows] = await db.execute(
-//       `SELECT product_id, img_url
-//        FROM image`
-//     );
-//     const products = productRows.map((product) => {
-//       const images = imageRows.filter(
-//         (image) => image.product_id === product.id
-//       );
-//       return {
-//         ...product,
-//         image: images,
-//       };
-//     });
-//     const [totalResult] = await db.execute(
-//       `SELECT COUNT(*) AS total FROM \`product\``
-//     );
-//     const total = totalResult[0].total;
-
-//     return {
-//       code: 200,
-//       data: products,
-//       total,
-//       pages: Math.ceil(total / limit), // Tổng số trang
-//       currentPage: page,
-//     };
-//   } catch (error) {
-//     throw error;
-//   }
-// }
 
 async function getProducts(page = 1, limit = 10, categoryId = null) {
   try {
@@ -387,6 +341,137 @@ async function getProducts(page = 1, limit = 10, categoryId = null) {
     throw error;
   }
 }
+
+async function getProductsByUser(page = 1, limit = 10, userId) {
+  try {
+    const offset = (page - 1) * limit;
+
+    if (!userId) {
+      throw new Error("User ID không hợp lệ.");
+    }
+
+    const [productRows] = await db.execute(
+      `
+      SELECT
+        p.id,
+        p.user_id,
+        p.category_id,
+        p.title,
+        p.price,
+        p.shipfee,
+        p.warranty,
+        p.approved,
+        c.name AS category_name
+      FROM
+        product p
+      JOIN
+        category c ON p.category_id = c.id
+      WHERE
+        p.approved = 1 AND p.user_id = ?
+      LIMIT ? OFFSET ?
+    `,
+      [userId, limit, offset]
+    );
+
+    const [imageRows] = await db.execute(
+      `SELECT product_id, img_url FROM image`
+    );
+
+    const products = productRows.map((product) => {
+      const images = imageRows
+        .filter((image) => image.product_id === product.id)
+        .map((image) => image.img_url);
+      return { ...product, images };
+    });
+
+    const [totalResult] = await db.execute(
+      `
+      SELECT COUNT(*) AS total 
+      FROM product 
+      WHERE approved = 1 AND user_id = ?
+    `,
+      [userId]
+    );
+
+    const total = totalResult[0].total || "Bạn chưa có sản phẩm nào";
+    return {
+      code: 200,
+      data: products,
+      total,
+      pages: Math.ceil(total / limit) || 1,
+      currentPage: page,
+    };
+  } catch (error) {
+    console.error("Lỗi trong hàm getProductsByUser:", error);
+    throw new Error("Lỗi khi lấy danh sách sản phẩm.");
+  }
+}
+
+async function getPendingProductsByUser(page = 1, limit = 10, userId) {
+  try {
+    const offset = (page - 1) * limit;
+
+    if (!userId) {
+      throw new Error("User ID không hợp lệ.");
+    }
+
+    const [productRows] = await db.execute(
+      `
+      SELECT
+        p.id,
+        p.user_id,
+        p.category_id,
+        p.title,
+        p.price,
+        p.shipfee,
+        p.warranty,
+        p.approved,
+        c.name AS category_name
+      FROM
+        product p
+      JOIN
+        category c ON p.category_id = c.id
+      WHERE
+        p.approved = 0 AND p.user_id = ?
+      LIMIT ? OFFSET ?
+    `,
+      [userId, limit, offset]
+    );
+
+    const [imageRows] = await db.execute(
+      `SELECT product_id, img_url FROM image`
+    );
+
+    const products = productRows.map((product) => {
+      const images = imageRows
+        .filter((image) => image.product_id === product.id)
+        .map((image) => image.img_url);
+      return { ...product, images };
+    });
+
+    const [totalResult] = await db.execute(
+      `
+      SELECT COUNT(*) AS total 
+      FROM product 
+      WHERE approved = 1 AND user_id = ?
+    `,
+      [userId]
+    );
+
+    const total = totalResult[0].total || "Bạn chưa có sản phẩm nào";
+    return {
+      code: 200,
+      data: products,
+      total,
+      pages: Math.ceil(total / limit) || 1,
+      currentPage: page,
+    };
+  } catch (error) {
+    console.error("Lỗi trong hàm getProductsByUser:", error);
+    throw new Error("Lỗi khi lấy danh sách sản phẩm.");
+  }
+}
+
 async function getDetailProduct(productId) {
   try {
     const [productRows] = await db.execute(
@@ -476,6 +561,8 @@ module.exports = {
   approveProduct,
   updateProduct,
   getDetailProduct,
+  getProductsByUser,
+  getPendingProductsByUser,
   searchProduct,
   deleteProduct,
 };

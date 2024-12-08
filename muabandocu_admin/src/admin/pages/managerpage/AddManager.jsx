@@ -16,8 +16,10 @@ function AddManager() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setValues({ ...values, [name]: value });
+
     if (isSubmitted) {
-      setError(Validation({ ...values, [name]: value }));
+      const fieldError = Validation({ ...values, [name]: value }, [name]);
+      setError((prevErrors) => ({ ...prevErrors, ...fieldError }));
     }
   };
 
@@ -25,13 +27,15 @@ function AddManager() {
     e.preventDefault();
     setIsSubmitted(true);
 
-    const validationErrors = Validation(values);
+    const validationErrors = Validation(values, ["name", "email", "password"]);
     setError(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
       console.log("Validation Errors:", validationErrors);
       return;
     }
+
+    // Nếu không có lỗi, gọi API để thêm quản lý
     addManager(values, navigate);
   };
   return (

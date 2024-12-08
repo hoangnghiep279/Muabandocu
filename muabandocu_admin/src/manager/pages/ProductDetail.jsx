@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/Loading";
+import { IoArrowBackSharp } from "react-icons/io5";
 import {
   fetchProductDetail,
   approveProduct,
@@ -30,9 +31,18 @@ const ProductDetail = () => {
 
   return (
     <main className="container p-5 h-screen overflow-auto">
-      <h2 className="text-2xl mb-5 font-bold">Thông tin chi tiết sản phẩm</h2>
       <div>
-        <table className=" border-collapse border-stone-800 border">
+        <Link to={"/manager"}>
+          <button className="bg-[#303134] text-white text-2xl hover:bg-gray-600 py-2 px-4 rounded">
+            <IoArrowBackSharp />
+          </button>
+        </Link>
+        <h2 className="text-2xl mb-5 font-bold text-center">
+          Thông tin chi tiết sản phẩm
+        </h2>
+      </div>
+      <div>
+        <table className="border-collapse w-full border-stone-800 border">
           <tbody>
             <tr className="h-12 max-h-16">
               <td className="w-1/6 border-stone-800 border font-semibold">
@@ -114,7 +124,7 @@ const ProductDetail = () => {
             </tr>
           </tbody>
         </table>
-        <div className="flex justify-end mt-5">
+        <div className="flex justify-end w-full mt-5">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => handleApprove(id)}

@@ -26,7 +26,8 @@ const Header = () => {
       return;
     }
     setError("");
-    navigate(`/search?keyword=${encodeURIComponent(keyword)}`);
+
+    navigate(`/search?keyword=${encodeURIComponent(keyword.trim())}`);
   };
 
   useEffect(() => {

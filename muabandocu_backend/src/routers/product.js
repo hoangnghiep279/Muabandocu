@@ -5,6 +5,7 @@ const { checkLogin } = require("../middleware/checkLogin");
 const multer = require("multer");
 const path = require("path");
 const { checkAdministrator } = require("../middleware/checkPermission");
+const { log } = require("console");
 
 const upload = multer({
   dest: path.join(__dirname, "../resources/products-img"),
@@ -51,6 +52,39 @@ router.get("/", async (req, res, next) => {
     next(error);
   }
 });
+
+// sản phầm đã duyệt của người dùng
+router.get("/user-products", checkLogin, async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+
+    const result = await controller.getProductsByUser(
+      page,
+      limit,
+      req.payload.id
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+// sanpham chua duyet cảu người dùng
+router.get("/user-pendingproducts", checkLogin, async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+
+    const result = await controller.getPendingProductsByUser(
+      page,
+      limit,
+      req.payload.id
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
 // tim kiem san pham
 router.get("/search", async (req, res, next) => {
   try {
@@ -71,23 +105,36 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // THÊM
-router.post("/", upload.array("images"), async (req, res, next) => {
+router.post("/", checkLogin, upload.array("images"), async (req, res, next) => {
   try {
-    res.json(await controller.insertProduct(req.body, req.files));
+    res.json(
+      await controller.insertProduct(req.body, req.files, req.payload.id)
+    );
   } catch (error) {
     next(error);
   }
 });
-
 // sửa
-router.put("/:id", upload.array("images"), async (req, res, next) => {
-  try {
-    const productId = req.params.id;
-    res.json(await controller.updateProduct(productId, req.body, req.files));
-  } catch (error) {
-    next(error);
+router.put(
+  "/:id",
+  checkLogin,
+  upload.array("images"),
+  async (req, res, next) => {
+    console.log(req.files);
+
+    try {
+      const result = await controller.updateProduct(
+        req.params.id,
+        req.payload.id,
+        req.body,
+        req.files
+      );
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // xóa
 router.delete("/:id", checkLogin, async (req, res, next) => {

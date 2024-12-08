@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { IoAddOutline } from "react-icons/io5";
@@ -17,7 +17,7 @@ const ProductDetail = () => {
   const [isSeeMore, setIsSeeMore] = useState(false);
 
   const MAX_LINES = 7;
-
+  const token = localStorage.getItem("token");
   useEffect(() => {
     fetchProductDetail(
       setProduct,
@@ -101,30 +101,35 @@ const ProductDetail = () => {
               </span>
             </p>
           </div>
-          <p className="flex items-center gap-3">
-            <span className="w-10 h-10 rounded-full block">
-              <img
-                className="w-full h-full object-cover"
-                src={`http://localhost:3000/${product.seller_avatar}`}
-                alt=""
-              />
-            </span>
-            <span className="text-light font-semibold opacity-70 text-black">
-              Người bán: {product.seller_name}
-            </span>{" "}
-          </p>
+          <Link to={token === product.user_id ? "/account" : "/shopuser"}>
+            <p className="flex items-center gap-3">
+              <span className="w-10 h-10 rounded-full block">
+                <img
+                  className="w-full h-full object-cover"
+                  src={`http://localhost:3000/${product.seller_avatar}`}
+                  alt=""
+                />
+              </span>
+              <span className="text-light font-semibold opacity-70 text-black">
+                Người bán: {product.seller_name}
+              </span>{" "}
+            </p>
+          </Link>
           <p className="text-light opacity-70 text-black whitespace-pre-line">
-            Mô tả: {isSeeMore ? product.description : description}{" "}
-            {product.description.split("\n").length > MAX_LINES && (
-              <button
-                className="text-primaryColor font-medium mt-2"
-                onClick={() => setIsSeeMore(!isSeeMore)}
-              >
-                {isSeeMore ? "Ẩn bớt" : "Xem thêm"}
-              </button>
-            )}
+            Mô tả:{" "}
+            {isSeeMore
+              ? product.description || "Không có mô tả"
+              : description || "Không có mô tả"}{" "}
+            {product.description &&
+              product.description.split("\n").length > MAX_LINES && (
+                <button
+                  className="text-primaryColor font-medium mt-2"
+                  onClick={() => setIsSeeMore(!isSeeMore)}
+                >
+                  {isSeeMore ? "Ẩn bớt" : "Xem thêm"}
+                </button>
+              )}
           </p>
-
           <div className="flex items-center gap-4">
             <button className="border bg-[#005d6312] border-primaryColor py-2 px-5 text-primaryColor flex items-center gap-2 text-lg hover:opacity-90">
               <BsCartPlus />

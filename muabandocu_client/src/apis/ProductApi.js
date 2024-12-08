@@ -1,4 +1,6 @@
 import axios from "axios";
+import { Navigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 //BREADCRUMB
 const fetchProductTitle = async (setProductTitle, id) => {
@@ -24,9 +26,13 @@ const fetchProductDetail = async (
 
     setProduct(response.data.data);
     setMainImg("http://localhost:3000/" + response.data.data.images[0]);
-    setDescription(
-      response.data.data.description.split("\n").slice(0, MAX_LINES).join("\n")
-    );
+    const description = response.data.data.description
+      ? response.data.data.description
+          .split("\n")
+          .slice(0, MAX_LINES)
+          .join("\n")
+      : "Không có mô tả cho sản phẩm này.";
+    setDescription(description);
     setLoading(false);
   } catch (error) {
     console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
@@ -64,7 +70,7 @@ const fetchProductsCategory = async (
       params: {
         page,
         limit: 9,
-        categoryId, // Truyền `categoryId` vào như một tham số trong query string (nếu có)
+        categoryId,
       },
     });
 
@@ -72,10 +78,10 @@ const fetchProductsCategory = async (
     setTotalPages(response.data.pages || 1);
   } catch (error) {
     console.error("Lỗi khi lấy sản phẩm:", error);
-    setProducts([]); // Xử lý khi gặp lỗi (trả về mảng rỗng)
-    setTotalPages(1); // Tổng số trang mặc định là 1
+    setProducts([]);
+    setTotalPages(1);
   } finally {
-    setLoading(false); // Set lại trạng thái loading khi kết thúc
+    setLoading(false);
   }
 };
 
@@ -92,7 +98,117 @@ const fetchSearchProduct = async (setProducts, setError, keyword) => {
       setError("Không tìm thấy sản phẩm.");
     }
   } catch (err) {
+    console.error("Lỗi fetch:", err);
     setError("Đã xảy ra lỗi khi tìm kiếm sản phẩm.");
+  }
+};
+
+// Lấy sản phẩm đã duyệt
+const fetchProductsApproved = async (setProducts, setTotalPages, page) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await axios.get(
+      `http://localhost:3000/products/user-products?page=${page}&limit=5`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    setProducts(response.data.data);
+    setTotalPages(response.data.pages);
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm:", error);
+  }
+};
+
+// lay san pham cho duyệt
+const fetchPendingProducts = async (setProducts, setTotalPages, page) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await axios.get(
+      `http://localhost:3000/products/user-pendingproducts?page=${page}&limit=5`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    setProducts(response.data.data);
+    setTotalPages(response.data.pages);
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm:", error);
+  }
+};
+
+// thêm sản phẩm
+const fetchAddProduct = async (
+  formData,
+  files,
+  setFormData,
+  setFiles,
+  setMessage,
+  setErrors
+) => {
+  try {
+    const token = localStorage.getItem("token");
+    const form = new FormData();
+    Object.entries(formData).forEach(([key, value]) => form.append(key, value));
+    Array.from(files).forEach((file) => form.append("images", file));
+
+    const res = await axios.post("http://localhost:3000/products", form, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setMessage(res.data.message || "Thêm sản phẩm thành công!");
+    setFormData({
+      title: "",
+      categoryId: "",
+      price: "",
+      description: "",
+      linkzalo: "",
+      warranty: "",
+      shipfee: "",
+    });
+    setFiles([]);
+    setErrors({});
+    toast("thêm sản phẩm thành công", { type: "success" });
+  } catch (err) {
+    setMessage(err.response?.data?.message || "Đã xảy ra lỗi!");
+    toast("thêm sản phẩm thất bại", { type: "error" });
+  }
+};
+const updateProduct = async (productId, updatedData, token) => {
+  try {
+    const response = await axios.put(
+      `http://localhost:3000/products/${productId}`,
+      updatedData,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw error;
+  }
+};
+
+const deleteProduct = async (productId, token) => {
+  try {
+    const response = await axios.delete(
+      `http://localhost:3000/products/${productId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(response.data);
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || "Đã xảy ra lỗi!";
   }
 };
 
@@ -102,4 +218,9 @@ export {
   fetchProductTitle,
   fetchProductDetail,
   fetchSearchProduct,
+  fetchProductsApproved,
+  fetchPendingProducts,
+  fetchAddProduct,
+  updateProduct,
+  deleteProduct,
 };

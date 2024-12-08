@@ -47,7 +47,7 @@ function ManagerAccount() {
       </table>
       <Link to="/admin/managerAccount/add">
         <button className="bg-primaryColor hover:bg-opacity-90 text-white font-bold py-2 px-4 mt-4">
-          Thêm loại sản phẩm
+          Thêm nhân viên
         </button>
       </Link>
     </main>
