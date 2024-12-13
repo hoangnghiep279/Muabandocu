@@ -24,10 +24,13 @@ const registerUser = async (values, setError, navigate) => {
 
 const loginUser = async (values, setError, navigate) => {
   try {
-    const response = await axios.post("http://localhost:3000/api/users/login", {
-      email: values.email,
-      password: values.password,
-    });
+    const response = await axios.post(
+      "http://localhost:3000/api/users/user-login",
+      {
+        email: values.email,
+        password: values.password,
+      }
+    );
 
     if (response && response.data.data && response.data.data.token) {
       localStorage.setItem("token", response.data.data.token);

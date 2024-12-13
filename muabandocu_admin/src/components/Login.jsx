@@ -48,7 +48,7 @@ function Login() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/users/login",
+        "http://localhost:3000/api/users/admin-login",
         {
           email: values.email,
           password: values.password,

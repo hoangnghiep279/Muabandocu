@@ -2,14 +2,10 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/user");
 const { checkLogin } = require("../middleware/checkLogin");
-const {
-  checkMyAccount,
-  checkDeleteUser,
-  checkAdmin,
-  checkAdministrator,
-} = require("../middleware/checkPermission");
+const { checkAdmin } = require("../middleware/checkPermission");
 const multer = require("multer");
 const path = require("path");
+const e = require("express");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -40,9 +36,18 @@ router.post(
   }
 );
 // Đăng nhập
-router.post("/login", async (req, res, next) => {
+router.post("/admin-login", async (req, res, next) => {
   try {
-    res.json(await controller.login(req.body));
+    const result = await controller.adminLogin(req.body);
+    res.status(result.code).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+router.post("/user-login", async (req, res, next) => {
+  try {
+    const result = await controller.userLogin(req.body);
+    res.status(result.code).json(result);
   } catch (error) {
     next(error);
   }

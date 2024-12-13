@@ -11,6 +11,7 @@ import Contact from "./pages/Contact";
 import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import ShopUser from "./pages/ShopUser";
+import Cart from "./pages/Cart";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -42,6 +43,10 @@ const App = () => {
         <Route
           path="/account"
           element={isAuthenticated ? <Account /> : <NotFound />}
+        />
+        <Route
+          path="/cart"
+          element={isAuthenticated ? <Cart /> : <NotFound />}
         />
       </Route>
 

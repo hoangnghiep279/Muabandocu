@@ -4,6 +4,7 @@ import { search, cart, profile, arrowUp } from "../imgs";
 import axios from "axios";
 import { IoNotificationsOutline } from "react-icons/io5";
 import { SlArrowDown } from "react-icons/sl";
+import { getTotal } from "../apis/cartitemApi";
 const Header = () => {
   const [keyword, setKeyword] = useState("");
   const [error, setError] = useState("");
@@ -11,14 +12,18 @@ const Header = () => {
   const [categories, setCategories] = useState([]);
   const [productDropdown, setProductDropdown] = useState("hidden");
   const [profileDropdown, setProfileDropdown] = useState("hidden");
+  const [totalItem, setTotalItem] = useState([]);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
   useEffect(() => {
-    const token = localStorage.getItem("token");
     if (token) {
       setLogin(true);
     }
   }, []);
 
+  useEffect(() => {
+    getTotal(setTotalItem, token);
+  }, [totalItem]);
   const handleSearch = (e) => {
     e.preventDefault();
     if (!keyword.trim()) {
@@ -146,10 +151,12 @@ const Header = () => {
               <div className="flex text-white text-3xl mt-1">
                 <IoNotificationsOutline />
               </div>
-              <div className="flex text-white ">
-                <img src={cart} alt="" />
-                <span>(0)</span>
-              </div>
+              <NavLink to={"/cart"}>
+                <div className="flex text-white ">
+                  <img src={cart} alt="" />
+                  <span>({totalItem})</span>
+                </div>
+              </NavLink>
 
               <div className="relative mb-[-20px]">
                 <img

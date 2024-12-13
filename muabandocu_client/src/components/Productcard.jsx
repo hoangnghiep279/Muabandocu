@@ -1,11 +1,27 @@
 import React from "react";
 import { rate } from "../imgs";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { BsCartPlus } from "react-icons/bs";
+import { addCartItem } from "../apis/cartitemApi";
 
 function Productcard({ product }) {
   const hasImages = product.images && product.images.length > 0;
+  const navigate = useNavigate();
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      navigate("/login"); // Chuyển hướng đến trang đăng nhập
+      return;
+    }
 
+    const result = await addCartItem(product);
+    if (result.success) {
+      alert(result.message);
+    } else {
+      alert(result.message);
+    }
+  };
   return (
     <div className="font-manropew w-[370px]">
       <div className="w-full h-[310px] rounded-t-xl overflow-hidden">
@@ -31,9 +47,14 @@ function Productcard({ product }) {
             <img src={rate} alt="" />
             <span className="text-lg font-light">5.0</span>
           </div>
-          <p className="text-lg font-medium">{product.price} đ</p>
+          <p className="text-lg font-medium">
+            {Number(product.price).toLocaleString("vi-VN")}đ
+          </p>
         </div>
-        <button className="w-full border bg-[#005d6312] border-primaryColor py-2 px-5 text-primaryColor flex-center gap-2 text-lg hover:opacity-90">
+        <button
+          onClick={handleAddToCart}
+          className="w-full border bg-[#005d6312] border-primaryColor py-2 px-5 text-primaryColor flex-center gap-2 text-lg hover:opacity-90"
+        >
           <BsCartPlus /> Thêm giỏ hàng
         </button>
       </div>

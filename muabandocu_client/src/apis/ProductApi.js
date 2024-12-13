@@ -104,8 +104,12 @@ const fetchSearchProduct = async (setProducts, setError, keyword) => {
 };
 
 // Lấy sản phẩm đã duyệt
-const fetchProductsApproved = async (setProducts, setTotalPages, page) => {
-  const token = localStorage.getItem("token");
+const fetchProductsApproved = async (
+  setProducts,
+  setTotalPages,
+  page,
+  token
+) => {
   try {
     const response = await axios.get(
       `http://localhost:3000/products/user-products?page=${page}&limit=5`,
@@ -115,6 +119,26 @@ const fetchProductsApproved = async (setProducts, setTotalPages, page) => {
         },
       }
     );
+    setProducts(response.data.data);
+    setTotalPages(response.data.pages);
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm:", error);
+  }
+};
+// Lấy sản phẩm và thông tin người bán
+const fetchProductsSeller = async (
+  setProducts,
+  setQuantity,
+  setTotalPages,
+  page,
+  userId
+) => {
+  try {
+    const response = await axios.get(
+      `http://localhost:3000/products/user-products/${userId}?page=${page}&limit=6`
+    );
+    setQuantity(response.data.total);
+
     setProducts(response.data.data);
     setTotalPages(response.data.pages);
   } catch (error) {
@@ -219,6 +243,7 @@ export {
   fetchProductDetail,
   fetchSearchProduct,
   fetchProductsApproved,
+  fetchProductsSeller,
   fetchPendingProducts,
   fetchAddProduct,
   updateProduct,

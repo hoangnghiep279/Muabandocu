@@ -49,10 +49,9 @@ const Product = () => {
     fetchCategoryName();
   }, [categoryId, page]);
 
-  const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= totalPages) {
-      setPage(newPage);
-    }
+  const handlePageChange = (event) => {
+    const selectedPage = parseInt(event.target.value, 10);
+    setPage(selectedPage);
   };
 
   if (loading) return <Loading />;
@@ -71,18 +70,28 @@ const Product = () => {
           <p>Không có sản phẩm nào!</p>
         )}
       </div>
-      <div className="flex justify-center items-center gap-3 mt-8">
+      <div className="flex justify-center items-center gap-1 mt-8">
         <button
           className="px-2 py-2 mx-2 bg-[#005d6312] rounded hover:bg-[#005c6338] border border-primaryColor hover:border"
-          onClick={() => handlePageChange(page - 1)}
+          onClick={() => setPage((prev) => prev - 1)}
           disabled={page === 1}
         >
           <MdKeyboardDoubleArrowLeft />
         </button>
-        <span className="text-lg">{page}</span>
+        <select
+          className="border-2 px-3 py-1"
+          value={page}
+          onChange={handlePageChange}
+        >
+          {Array.from({ length: totalPages }, (_, index) => (
+            <option key={index + 1} value={index + 1}>
+              {index + 1}
+            </option>
+          ))}
+        </select>
         <button
           className="px-2 py-2 mx-2 bg-[#005d6312] rounded hover:bg-[#005c6338] border border-primaryColor hover:border"
-          onClick={() => handlePageChange(page + 1)}
+          onClick={() => setPage((prev) => prev + 1)}
           disabled={page === totalPages}
         >
           <MdKeyboardDoubleArrowRight />

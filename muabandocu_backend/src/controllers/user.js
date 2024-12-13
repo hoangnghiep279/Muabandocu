@@ -163,7 +163,7 @@ async function resgisterManager(user) {
   }
 }
 
-async function login(user) {
+async function adminLogin(user) {
   try {
     const [[rows]] = await db.execute(
       `SELECT * FROM \`user\` WHERE \`email\` = ?`,
@@ -173,6 +173,12 @@ async function login(user) {
     if (!rows) {
       const error = new Error("Thông tin tài khoản không tồn tại!");
       error.statusCode = 401;
+      throw error;
+    }
+
+    if (![1, 2].includes(rows.permission_id)) {
+      const error = new Error("Bạn không có quyền truy cập!");
+      error.statusCode = 403;
       throw error;
     }
 
@@ -191,12 +197,53 @@ async function login(user) {
       code: 200,
       data: {
         id: rows.id,
-        cart: rows.cart_id,
         name: rows.name,
-        gender: rows.gender,
         email: rows.email,
-        avatar: rows.avatar,
-        phone: rows.phone,
+        permission: rows.permission_id,
+        token,
+      },
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function userLogin(user) {
+  try {
+    const [[rows]] = await db.execute(
+      `SELECT * FROM \`user\` WHERE \`email\` = ?`,
+      [user.email]
+    );
+
+    if (!rows) {
+      const error = new Error("Thông tin tài khoản không tồn tại!");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    if (rows.permission_id !== 3) {
+      const error = new Error("Bạn không có quyền truy cập!");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const isPasswordMatch = await comparePassword(user.password, rows.password);
+    if (!isPasswordMatch) {
+      const error = new Error(
+        "Thông tin tài khoản hoặc mật khâ̂u không chính xác!"
+      );
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const id = rows.id;
+    const token = await signToken(id);
+    return {
+      code: 200,
+      data: {
+        id: rows.id,
+        name: rows.name,
+        email: rows.email,
         permission: rows.permission_id,
         token,
       },
@@ -431,7 +478,8 @@ async function deleteUser(id) {
 }
 
 module.exports = {
-  login,
+  adminLogin,
+  userLogin,
   register,
   resgisterManager,
   changePassword,

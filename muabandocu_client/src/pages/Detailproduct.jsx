@@ -86,22 +86,16 @@ const ProductDetail = () => {
           <div className="text-lg flex items-center gap-3 ">
             <span className="text-light  opacity-70 text-black">Số lượng:</span>{" "}
             <p className="flex items-center">
-              <span
-                className="border p-1 flex-center cursor-pointer"
-                onClick={decreaseQuantity}
-              >
-                <FiMinus />
-              </span>{" "}
               <span className="border-t border-b px-3">{quantity}</span>
-              <span
-                className="border p-1 flex-center cursor-pointer"
-                onClick={increaseQuantity}
-              >
-                <IoAddOutline />
-              </span>
             </p>
           </div>
-          <Link to={token === product.user_id ? "/account" : "/shopuser"}>
+
+          <Link
+            to={{
+              pathname: token === product.user_id ? "/account" : "/shopuser",
+              search: `?userId=${product.user_id}`,
+            }}
+          >
             <p className="flex items-center gap-3">
               <span className="w-10 h-10 rounded-full block">
                 <img
@@ -112,9 +106,10 @@ const ProductDetail = () => {
               </span>
               <span className="text-light font-semibold opacity-70 text-black">
                 Người bán: {product.seller_name}
-              </span>{" "}
+              </span>
             </p>
           </Link>
+
           <p className="text-light opacity-70 text-black whitespace-pre-line">
             Mô tả:{" "}
             {isSeeMore

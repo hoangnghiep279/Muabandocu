@@ -42,3 +42,10 @@
   background: #c7dddd;
   color: #131717;
 }
+
+.seller_cover {
+  background-image: url("/src/assets/imgs/anhbia.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

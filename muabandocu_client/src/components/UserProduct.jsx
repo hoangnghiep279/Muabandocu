@@ -7,9 +7,9 @@ const UserPendingProduct = () => {
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
+  const token = localStorage.getItem("token");
   useEffect(() => {
-    fetchProductsApproved(setProducts, setTotalPages, page);
+    fetchProductsApproved(setProducts, setTotalPages, page, token);
   }, [page]);
 
   const handlePageChange = (event) => {

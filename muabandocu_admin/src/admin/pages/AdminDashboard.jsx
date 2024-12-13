@@ -24,7 +24,7 @@ function AdminDashboard() {
     <div>
       <div className="p-4 w-full mx-auto overflow-auto max-h-screen  ">
         <h1 className="text-2xl font-bold mb-4 ">
-          Danh sách sản phẩm chờ duyệt
+          Danh sách sản phẩm đã duyệt
         </h1>
         {products.length > 0 ? (
           <div className="overflow-y-auto min-h-[450px]">

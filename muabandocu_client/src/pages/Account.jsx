@@ -4,12 +4,14 @@ import { FaRegUser } from "react-icons/fa6";
 import { BsHandbag } from "react-icons/bs";
 import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
 import { MdOutlineNotifications } from "react-icons/md";
+import { IoLocationOutline } from "react-icons/io5";
 import Profile from "../components/Profile";
 import { getProfile } from "../apis/UserApi";
 import ChangePassword from "../components/ChangePassword";
 import UserProduct from "../components/UserProduct";
 import UserPendingProduct from "../components/UserPendingProduct";
 import AddProduct from "../components/AddProduct";
+import Address from "../components/Address";
 
 function Account() {
   const [user, setUser] = useState(null);
@@ -44,6 +46,8 @@ function Account() {
         return <UserPendingProduct />;
       case "addproduct":
         return <AddProduct />;
+      case "address":
+        return <Address />;
       case "notifications":
         return <Notifications />;
       default:
@@ -141,6 +145,12 @@ function Account() {
               >
                 Thêm sản phẩm
               </button>
+            </li>
+
+            <li onClick={() => setActiveSection("address")}>
+              <span className="flex items-center gap-2 font-medium cursor-pointer">
+                <IoLocationOutline /> Địa chỉ
+              </span>
             </li>
             <li onClick={() => setActiveSection("orders")}>
               <span className="flex items-center gap-2 font-medium cursor-pointer">

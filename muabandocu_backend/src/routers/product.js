@@ -69,6 +69,22 @@ router.get("/user-products", checkLogin, async (req, res, next) => {
     next(error);
   }
 });
+// sản phầm và thông tin người bán
+router.get("/user-products/:id", async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+
+    const result = await controller.getProductsBySeller(
+      page,
+      limit,
+      req.params.id
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
 // sanpham chua duyet cảu người dùng
 router.get("/user-pendingproducts", checkLogin, async (req, res, next) => {
   try {

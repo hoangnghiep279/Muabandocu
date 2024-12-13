@@ -42,12 +42,13 @@ async function insertProduct(products, files, userId) {
               \`linkzalo\`,
               \`description\`,
               \`price\`,
+              \`quantity\`,
               \`warranty\`,
               \`shipfee\`,
               \`status\`,
               \`approved\`
           ) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)`,
+          VALUES (?, ?, ?, ?, ?, ?, ?, 1,?, ?, 0, 0)`,
       [
         productId,
         userId,
@@ -407,6 +408,76 @@ async function getProductsByUser(page = 1, limit = 10, userId) {
   }
 }
 
+async function getProductsBySeller(page = 1, limit = 10, userId) {
+  try {
+    const offset = (page - 1) * limit;
+
+    if (!userId) {
+      throw new Error("User ID không hợp lệ.");
+    }
+
+    const [productRows] = await db.execute(
+      `
+     SELECT
+        p.id,
+        p.user_id,
+        p.category_id,
+        p.title,
+        p.price,
+        p.linkzalo,
+        p.shipfee,
+        p.warranty,
+        p.approved,
+        c.name AS category_name,
+        u.name AS seller_name,
+        u.avatar AS seller_avatar
+    FROM
+        product p
+    JOIN
+        category c ON p.category_id = c.id
+    JOIN
+        user u ON u.id = p.user_id
+    WHERE
+        p.approved = 1 AND p.user_id = ?
+    LIMIT ? OFFSET ?
+    `,
+      [userId, limit, offset]
+    );
+
+    const [imageRows] = await db.execute(
+      `SELECT product_id, img_url FROM image`
+    );
+
+    const products = productRows.map((product) => {
+      const images = imageRows
+        .filter((image) => image.product_id === product.id)
+        .map((image) => image.img_url);
+      return { ...product, images };
+    });
+
+    const [totalResult] = await db.execute(
+      `
+      SELECT COUNT(*) AS total 
+      FROM product 
+      WHERE approved = 1 AND user_id = ?
+    `,
+      [userId]
+    );
+
+    const total = totalResult[0].total || "Bạn chưa có sản phẩm nào";
+    return {
+      code: 200,
+      data: products,
+      total,
+      pages: Math.ceil(total / limit) || 1,
+      currentPage: page,
+    };
+  } catch (error) {
+    console.error("Lỗi trong hàm getProductsByUser:", error);
+    throw new Error("Lỗi khi lấy danh sách sản phẩm.");
+  }
+}
+
 async function getPendingProductsByUser(page = 1, limit = 10, userId) {
   try {
     const offset = (page - 1) * limit;
@@ -562,6 +633,7 @@ module.exports = {
   updateProduct,
   getDetailProduct,
   getProductsByUser,
+  getProductsBySeller,
   getPendingProductsByUser,
   searchProduct,
   deleteProduct,
