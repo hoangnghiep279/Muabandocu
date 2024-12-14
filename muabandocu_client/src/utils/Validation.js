@@ -130,4 +130,32 @@ function ValidationProduct(values, fields = [], files = []) {
 
   return error;
 }
-export { Validation, ValidationProduct };
+
+function ValidationCheckout(values, fields = []) {
+  const error = {};
+
+  // Validate address
+  if (fields.includes("address")) {
+    if (!values.address || values.address.trim() === "") {
+      error.address = "Vui lòng nhập địa chỉ";
+    }
+  }
+
+  // Validate district
+  if (fields.includes("district")) {
+    if (!values.district || values.district.trim() === "") {
+      error.district = "Vui lòng chọn quận/huyện";
+    }
+  }
+
+  // Validate city
+  if (fields.includes("city")) {
+    if (!values.city || values.city.trim() === "") {
+      error.city = "Vui lòng chọn thành phố";
+    }
+  }
+
+  return error;
+}
+
+export { Validation, ValidationProduct, ValidationCheckout };

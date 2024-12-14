@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { deleteCartItem, fetchCartItems } from "../apis/cartitemApi";
+import { useNavigate } from "react-router-dom";
 import {
   MdKeyboardDoubleArrowRight,
   MdKeyboardDoubleArrowLeft,
@@ -13,6 +14,7 @@ function Cart() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   const handleDeleteCartItem = async (id) => {
     const confirmDelete = window.confirm(
@@ -71,6 +73,10 @@ function Cart() {
   const handlePageChange = (event) => {
     const selectedPage = parseInt(event.target.value, 10);
     setPage(selectedPage);
+  };
+  const handleCheckout = () => {
+    const checkoutData = { cartItems, totalShipFee, totalAll };
+    navigate("/checkout", { state: checkoutData });
   };
 
   return (
@@ -163,7 +169,10 @@ function Cart() {
             <span>Tổng giá</span>
             <span>{totalAll.toLocaleString("vi-VN")}đ</span>
           </p>
-          <button className="w-full mt-6 py-2 bg-primaryColor text-white">
+          <button
+            className="w-full mt-6 py-2 bg-primaryColor text-white"
+            onClick={handleCheckout}
+          >
             Thanh toán
           </button>
         </div>
