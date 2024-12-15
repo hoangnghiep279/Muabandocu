@@ -87,6 +87,27 @@ async function insertCartItem(userId, product) {
       throw err;
     }
 
+    // Kiểm tra sản phẩm thuộc về ai
+    const [productOwnerResult] = await db.execute(
+      "SELECT user_id FROM product WHERE id = ?",
+      [product.product_id]
+    );
+
+    if (productOwnerResult.length === 0) {
+      const err = new Error("Sản phẩm không tồn tại!");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const productOwnerId = productOwnerResult[0].user_id;
+
+    if (productOwnerId === userId) {
+      return {
+        code: 403,
+        message: "Bạn không thể thêm sản phẩm của chính mình vào giỏ hàng!",
+      };
+    }
+
     const [cartResult] = await db.execute(
       "SELECT id FROM cart WHERE user_id = ?",
       [userId]

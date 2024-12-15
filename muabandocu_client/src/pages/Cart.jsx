@@ -81,13 +81,18 @@ function Cart() {
 
   return (
     <main className="py-24 container font-manrope">
-      <div className="flex gap-14">
-        <div className="w-3/5">
-          <h1 className="text-xl font-bold">Giỏ hàng của bạn</h1>
-          {loading ? (
-            <p>Đang tải sản phẩm...</p>
-          ) : (
-            cartItems.map((cart) => (
+      {loading ? (
+        <p>Đang tải sản phẩm...</p>
+      ) : cartItems.length === 0 ? (
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Giỏ hàng của bạn</h1>
+          <p className="text-lg mt-4">Bạn chưa thêm sản phẩm nào.</p>
+        </div>
+      ) : (
+        <div className="flex gap-14">
+          <div className="w-3/5">
+            <h1 className="text-xl font-bold">Giỏ hàng của bạn</h1>
+            {cartItems.map((cart) => (
               <div
                 key={cart.cartitem_id}
                 className="flex gap-5 mt-5 py-4 border-t"
@@ -121,62 +126,62 @@ function Cart() {
                   </button>
                 </div>
               </div>
-            ))
-          )}
-          {totalItem > 5 && (
-            <div className="flex justify-center items-center gap-1 mt-8">
-              <button
-                className="px-1 py-1 mx-2 bg-[#005d6312] rounded hover:bg-[#005c6338] border border-primaryColor hover:border"
-                onClick={() => setPage((prev) => prev - 1)}
-                disabled={page === 1}
-              >
-                <MdKeyboardDoubleArrowLeft />
-              </button>
-              <select
-                className="border-2 px-1"
-                value={page}
-                onChange={handlePageChange}
-              >
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <option key={index + 1} value={index + 1}>
-                    {index + 1}
-                  </option>
-                ))}
-              </select>
-              <button
-                className="px-1 py-1 mx-2 bg-[#005d6312] rounded hover:bg-[#005c6338] border border-primaryColor hover:border"
-                onClick={() => setPage((prev) => prev + 1)}
-                disabled={page === totalPages}
-              >
-                <MdKeyboardDoubleArrowRight />
-              </button>
-            </div>
-          )}
+            ))}
+            {totalItem > 5 && (
+              <div className="flex justify-center items-center gap-1 mt-8">
+                <button
+                  className="px-1 py-1 mx-2 bg-[#005d6312] rounded hover:bg-[#005c6338] border border-primaryColor hover:border"
+                  onClick={() => setPage((prev) => prev - 1)}
+                  disabled={page === 1}
+                >
+                  <MdKeyboardDoubleArrowLeft />
+                </button>
+                <select
+                  className="border-2 px-1"
+                  value={page}
+                  onChange={handlePageChange}
+                >
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <option key={index + 1} value={index + 1}>
+                      {index + 1}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className="px-1 py-1 mx-2 bg-[#005d6312] rounded hover:bg-[#005c6338] border border-primaryColor hover:border"
+                  onClick={() => setPage((prev) => prev + 1)}
+                  disabled={page === totalPages}
+                >
+                  <MdKeyboardDoubleArrowRight />
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="w-2/5">
+            <h3 className="text-xl font-bold">Giá sản phẩm</h3>
+            <ul className="border-y my-4 flex flex-col gap-3 text-[#566363]">
+              <li className="flex items-center justify-between">
+                <span>Giá gốc</span>
+                <span>{totalPrice.toLocaleString("vi-VN")}đ</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span>Phí ship</span>
+                <span>{totalShipFee.toLocaleString("vi-VN")}đ</span>
+              </li>
+            </ul>
+            <p className="flex items-center justify-between">
+              <span>Tổng giá</span>
+              <span>{totalAll.toLocaleString("vi-VN")}đ</span>
+            </p>
+            <button
+              className="w-full mt-6 py-2 bg-primaryColor text-white"
+              onClick={handleCheckout}
+            >
+              Thanh toán
+            </button>
+          </div>
         </div>
-        <div className="w-2/5">
-          <h3 className="text-xl font-bold">Giá sản phẩm</h3>
-          <ul className="border-y my-4 flex flex-col gap-3 text-[#566363]">
-            <li className="flex items-center justify-between">
-              <span>Giá gốc</span>
-              <span>{totalPrice.toLocaleString("vi-VN")}đ</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span>Phí ship</span>
-              <span>{totalShipFee.toLocaleString("vi-VN")}đ</span>
-            </li>
-          </ul>
-          <p className="flex items-center justify-between">
-            <span>Tổng giá</span>
-            <span>{totalAll.toLocaleString("vi-VN")}đ</span>
-          </p>
-          <button
-            className="w-full mt-6 py-2 bg-primaryColor text-white"
-            onClick={handleCheckout}
-          >
-            Thanh toán
-          </button>
-        </div>
-      </div>
+      )}
     </main>
   );
 }

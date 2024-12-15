@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import axios from "axios";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Breadcrumbs";
-import { IoAddOutline } from "react-icons/io5";
-import { FiMinus } from "react-icons/fi";
 import { BsCartPlus } from "react-icons/bs";
 import Loading from "../components/Loading";
 import { fetchProductDetail } from "../apis/ProductApi";
+import { addCartItem } from "../apis/cartitemApi";
 const ProductDetail = () => {
   const { id } = useParams(); // Lấy id sản phẩm từ URL
   const [product, setProduct] = useState(null);
@@ -15,7 +13,38 @@ const ProductDetail = () => {
   const [mainImg, setMainImg] = useState("");
   const [description, setDescription] = useState("");
   const [isSeeMore, setIsSeeMore] = useState(false);
+  const navigate = useNavigate();
 
+  const handleBuyNow = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Bạn cần đăng nhập để mua sản phẩm.");
+      navigate("/login"); // Chuyển hướng đến trang đăng nhập
+      return;
+    }
+
+    // Giả sử `token` chứa thông tin người dùng sau khi được giải mã
+    const user = JSON.parse(atob(token.split(".")[1])); // Decode payload từ JWT token
+    if (user.id === product.user_id) {
+      alert("Bạn không thể mua sản phẩm do chính bạn đăng.");
+      return;
+    }
+
+    const productData = {
+      cartItems: [
+        {
+          product_id: product.id,
+          title: product.title,
+          price: product.price,
+          quantity: quantity,
+        },
+      ],
+      totalAll: product.price * quantity,
+      totalShipFee: 30000, // Bạn có thể thay phí ship bằng giá trị thực
+    };
+
+    navigate("/checkout", { state: productData });
+  };
   const MAX_LINES = 7;
   const token = localStorage.getItem("token");
   useEffect(() => {
@@ -29,17 +58,19 @@ const ProductDetail = () => {
     );
   }, [id]);
 
-  const increaseQuantity = () => {
-    if (quantity < product.quantity) {
-      setQuantity(quantity + 1);
-    } else {
-      alert("Số lượng trong kho tối đa là: " + product.quantity);
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      navigate("/login"); // Chuyển hướng đến trang đăng nhập
+      return;
     }
-  };
 
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
+    const result = await addCartItem(product);
+    if (result.success) {
+      alert(result.message);
+    } else {
+      alert(result.message);
     }
   };
 
@@ -126,11 +157,17 @@ const ProductDetail = () => {
               )}
           </p>
           <div className="flex items-center gap-4">
-            <button className="border bg-[#005d6312] border-primaryColor py-2 px-5 text-primaryColor flex items-center gap-2 text-lg hover:opacity-90">
+            <button
+              onClick={handleAddToCart}
+              className="border bg-[#005d6312] border-primaryColor py-2 px-5 text-primaryColor flex items-center gap-2 text-lg hover:opacity-90"
+            >
               <BsCartPlus />
               Thêm giỏ hàng
             </button>
-            <button className="bg-primaryColor py-2 w-44 text-white text-lg hover:opacity-90 ">
+            <button
+              onClick={handleBuyNow}
+              className="bg-primaryColor py-2 w-44 text-white text-lg hover:opacity-90"
+            >
               Mua ngay
             </button>
           </div>

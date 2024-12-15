@@ -40,15 +40,16 @@ const App = () => {
         <Route path="/search" element={<SearchResult />} />
         <Route path="/product/:id" element={<Detailproduct />} />
         <Route path="/shopuser" element={<ShopUser />} />
+        <Route path="/cart" element={<Cart />} />
 
         <Route
           path="/account"
           element={isAuthenticated ? <Account /> : <NotFound />}
         />
-        <Route
+        {/* <Route
           path="/cart"
           element={isAuthenticated ? <Cart /> : <NotFound />}
-        />
+        /> */}
         <Route
           path="/checkout"
           element={isAuthenticated ? <Checkout /> : <NotFound />}
