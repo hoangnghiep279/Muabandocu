@@ -22,6 +22,7 @@ async function getCartItems(userId, page = 1, limit = 10) {
         c.id AS cartitem_id,
         p.id AS product_id,
         p.category_id,
+        p.user_id,
         p.title,
         p.price,
         p.description,

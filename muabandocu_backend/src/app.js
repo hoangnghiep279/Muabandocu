@@ -7,8 +7,8 @@ const cartitem = require("./routers/cartitem");
 const address = require("./routers/address");
 const payment = require("./routers/payment");
 const order = require("./routers/order");
+const notification = require("./routers/notification");
 const path = require("path");
-const { default: axios } = require("axios");
 const app = express();
 
 app.use(cors());
@@ -34,5 +34,6 @@ app.use("/cartitem", cartitem);
 app.use("/address", address);
 app.use("/payment", payment);
 app.use("/order", order);
+app.use("/notification", notification);
 
 module.exports = app;

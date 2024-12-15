@@ -33,7 +33,7 @@ function Checkout() {
 
   useEffect(() => {
     getAddresses(setAddresses, token);
-  }, [addresses]);
+  }, [token]);
 
   const handleCityChange = (city) => {
     setNewAddress({ ...newAddress, city, district: "" });
@@ -82,27 +82,36 @@ function Checkout() {
       return;
     }
 
+    console.log(cartItems);
+
     try {
-      await axios.post(
-        "http://localhost:3000/orders",
-        {
-          address_id: selectedAddress,
-          cart_items: cartItems.map(({ cartitem_id, product_quantity }) => ({
-            cartitem_id,
-            quantity: product_quantity,
-          })),
-          total_price: totalAll,
-          payment_method: paymentMethod, // Include payment method in the order
-        },
+      const orderData = {
+        address_id: selectedAddress || null,
+        payment_method: paymentMethod || null,
+        shipfee: totalShipFee || 0,
+        totalprice: totalAll || 0,
+        products: cartItems.map(({ product_id, price, user_id }) => ({
+          product_id: product_id || null,
+          quantity: 1,
+          price: price || 0,
+          seller_id: user_id || null,
+        })),
+      };
+
+      const orderResponse = await axios.post(
+        "http://localhost:3000/order",
+        orderData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+
       alert("Đặt hàng thành công!");
     } catch (error) {
       console.error("Error placing order:", error);
+      alert("Có lỗi xảy ra. Vui lòng thử lại.");
     }
   };
 
@@ -110,7 +119,6 @@ function Checkout() {
     <div className="py-8 container font-manrope">
       <h1 className="text-xl font-bold mb-4">Thanh toán</h1>
       <div className="grid grid-cols-2 gap-6">
-        {/* Thông tin sản phẩm */}
         <div>
           <h2 className="text-lg font-bold mb-2">Sản phẩm</h2>
           {cartItems.map((item) => (
@@ -130,7 +138,6 @@ function Checkout() {
           </p>
         </div>
 
-        {/* Thông tin địa chỉ */}
         <div>
           <h2 className="text-lg font-bold mb-2">Địa chỉ giao hàng</h2>
           {addresses.length > 0 ? (
@@ -211,7 +218,6 @@ function Checkout() {
           )}
         </div>
 
-        {/* Phương thức thanh toán */}
         <div>
           <h2 className="text-lg font-bold mb-2">Phương thức thanh toán</h2>
           <div className="mb-4">

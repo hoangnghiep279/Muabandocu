@@ -21,14 +21,6 @@ async function getNotifications(userId) {
   }
 }
 
-async function newNotification(userId, message) {
-  const [rows] = await db.execute(
-    "INSERT INTO notification (user_id, message) VALUES (?, ?)",
-    [userId, message]
-  );
-  return rows;
-}
-
 module.exports = {
   getNotifications,
 };
