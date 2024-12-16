@@ -9,7 +9,7 @@ export default {
         vietnam: ["Be Vietnam Pro", "san-serif"],
       },
       colors: {
-        primaryColor: "#005D63",
+        primaryColor: "#de3737",
         // secondColor: "#FFB800",
       },
     },

@@ -10,5 +10,12 @@ router.get("/", checkLogin, async (req, res, next) => {
     next(error);
   }
 });
+router.post("/mark-read", checkLogin, async (req, res, next) => {
+  try {
+    res.json(await controller.markNotificationsAsRead(req.payload.id));
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;

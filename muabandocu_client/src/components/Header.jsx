@@ -15,15 +15,55 @@ const Header = () => {
   const [totalItem, setTotalItem] = useState([]);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/notification", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications(response.data.data);
+      const count = response.data.data.filter((notif) => !notif.is_read).length;
+      setUnreadCount(count);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  const handleMarkAsRead = async () => {
+    try {
+      await axios.post(
+        "http://localhost:3000/notification/mark-read",
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUnreadCount(0); // Đặt số thông báo chưa đọc về 0
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchNotifications();
+    }
+  }, []);
+
+  // LOGIN
   useEffect(() => {
     if (token) {
       setLogin(true);
     }
   }, []);
 
+  // GIO HANG
   useEffect(() => {
     getTotal(setTotalItem, token);
   }, [totalItem]);
+
+  // TIM KIEM
   const handleSearch = (e) => {
     e.preventDefault();
     if (!keyword.trim()) {
@@ -35,6 +75,7 @@ const Header = () => {
     navigate(`/search?keyword=${encodeURIComponent(keyword.trim())}`);
   };
 
+  // DANH SACH DANH MUC
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -47,6 +88,8 @@ const Header = () => {
 
     fetchCategories();
   }, []);
+
+  // DROPDOWN PROFILE
   const handleDropdownprofile = (display) => {
     setProfileDropdown(display);
   };
@@ -148,8 +191,42 @@ const Header = () => {
         {login ? (
           <div className="mt-2">
             <div className="flex items-center gap-4 font-manrope">
-              <div className="flex text-white text-3xl mt-1">
-                <IoNotificationsOutline />
+              <div className="flex relative text-white text-3xl mt-1">
+                <IoNotificationsOutline
+                  onClick={() => {
+                    setIsDropdownVisible(!isDropdownVisible);
+                    if (!isDropdownVisible) {
+                      handleMarkAsRead();
+                    }
+                  }}
+                />
+                {unreadCount > 0 && (
+                  <div className="absolute top-0 right-0 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {unreadCount}
+                  </div>
+                )}
+                {isDropdownVisible && (
+                  <div className="absolute top-10 right-1/2 translate-x-1/2 box-shadow rounded-lg w-64 max-h-80 overflow-y-auto z-50">
+                    <ul>
+                      {notifications.length > 0 ? (
+                        notifications.map((notif) => (
+                          <li
+                            key={notif.id}
+                            className={`p-3 text-xs text-stone-800 border-b border-stone-900 ${
+                              notif.is_read ? "bg-transparent" : "bg-blue-400"
+                            }`}
+                          >
+                            {notif.message}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="p-3 text-gray-500">
+                          Không có thông báo nào.
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
               </div>
               <NavLink to={"/cart"}>
                 <div className="flex text-white ">

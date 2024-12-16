@@ -1,34 +1,43 @@
 // controllers/orderController.js
 const db = require("../config/database");
 
-// async function getOrderById(orderId) {
-
-// }
-// Tạo đơn hàng
-async function createOrder(orders, buyerId) {
+async function createOrder(
+  orders,
+  buyerId,
+  paymentUrl = null,
+  orderIdFromMoMo = null
+) {
   try {
     const [orderResult] = await db.execute("SELECT uuid() AS orderId");
     const orderId = orderResult[0].orderId;
 
+    let orderStatus = 0; //chờ xử lý
+
+    if (orders.payment_method === "momo") {
+      orderStatus = 1; //chờ thanh toán MoMo
+    }
+
     // Tạo đơn hàng
     await db.execute(
-      "INSERT INTO `order` (id, user_id, address_id, status, payment_method, shipfee, totalprice) VALUES (?, ?, ?, 0, ?, ?, ?)",
+      "INSERT INTO `order` (id, user_id, address_id, status, payment_method, shipfee, totalprice, momo_order_id, momo_payment_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         orderId,
         buyerId,
         orders.address_id,
+        orderStatus,
         orders.payment_method,
         orders.shipfee,
         orders.totalprice,
+        orderIdFromMoMo || null,
+        paymentUrl || null,
       ]
     );
 
     // Tạo các sản phẩm trong đơn hàng với ID riêng cho mỗi sản phẩm
     const orderItems = [];
-    const sellerProducts = {}; // Để nhóm sản phẩm theo người bán
+    const sellerProducts = {}; //nhóm sản phẩm theo người bán
 
     for (const product of orders.products) {
-      // Kiểm tra xem user_id của sản phẩm có khớp với seller_id trong đơn hàng không
       const [productResult] = await db.execute(
         "SELECT user_id FROM product WHERE id = ?",
         [product.product_id]
@@ -66,7 +75,7 @@ async function createOrder(orders, buyerId) {
       [orderItems]
     );
 
-    // Tạo thông báo cho từng người bán
+    // Tạo thông báo
     for (const sellerId in sellerProducts) {
       const sellerMessage = `Bạn có một đơn hàng mới cần duyệt cho các sản phẩm ID: ${sellerProducts[
         sellerId
@@ -77,7 +86,6 @@ async function createOrder(orders, buyerId) {
       );
     }
 
-    // Tạo thông báo cho người mua
     const buyerMessage = `Đặt hàng thành công! Mã đơn hàng của bạn là: ${orderId}`;
     await db.execute(
       "INSERT INTO `notification` (id, user_id, message, is_read) VALUES (uuid(), ?, ?, 0)",
@@ -89,6 +97,7 @@ async function createOrder(orders, buyerId) {
       data: {
         orderId,
         message: "Đặt hàng thành công! Thông báo đã được gửi.",
+        paymentUrl,
       },
     };
   } catch (error) {

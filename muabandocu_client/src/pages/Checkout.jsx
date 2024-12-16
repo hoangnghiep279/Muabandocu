@@ -247,7 +247,7 @@ function Checkout() {
         </div>
       </div>
       <button
-        className="bg-green-500 text-white py-2 px-4 mt-6"
+        className="bg-primaryColor text-white py-2 px-4 mt-6"
         onClick={handlePlaceOrder}
       >
         Đặt hàng
