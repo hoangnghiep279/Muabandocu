@@ -19,7 +19,7 @@ const ProductDetail = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Bạn cần đăng nhập để mua sản phẩm.");
-      navigate("/login"); // Chuyển hướng đến trang đăng nhập
+      navigate("/login");
       return;
     }
 
@@ -33,10 +33,11 @@ const ProductDetail = () => {
     const productData = {
       cartItems: [
         {
-          product_id: product.id,
+          product_id: product.product_id,
           title: product.title,
           price: product.price,
           quantity: quantity,
+          user_id: product.user_id,
         },
       ],
       totalAll: product.price * quantity,
@@ -57,7 +58,7 @@ const ProductDetail = () => {
       id
     );
   }, [id]);
-
+  console.log(product);
   const handleAddToCart = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -67,11 +68,11 @@ const ProductDetail = () => {
     }
 
     const result = await addCartItem(product);
-    if (result.success) {
-      alert(result.message);
-    } else {
-      alert(result.message);
-    }
+    // if (result.success) {
+    //   alert(result.message);
+    // } else {
+    //   alert(result.message);
+    // }
   };
 
   if (loading) return <Loading />;

@@ -6,7 +6,7 @@ import Crolltotop from "../Crolltotop";
 function LayoutWeb() {
   return (
     <div>
-      <header>
+      <header className="sticky top-[-20px] z-50 bg-white shadow-md">
         <Header />
         <Crolltotop />
       </header>

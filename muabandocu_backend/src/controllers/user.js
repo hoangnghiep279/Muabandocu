@@ -325,9 +325,53 @@ async function getManager() {
   }
 }
 
-function convertDate(dateString) {
-  const [day, month, year] = dateString.split("/");
-  return `${year}-${month}-${day}`;
+// function convertDate(dateString) {
+//   const [day, month, year] = dateString.split("/");
+//   return `${year}-${month}-${day}`;
+// }
+
+async function linkMoMoAccount(userId, momoAccount) {
+  try {
+    // Kiểm tra tài khoản MoMo
+    const [result] = await db.execute(
+      "SELECT momo_account FROM user WHERE id = ?",
+      [userId]
+    );
+
+    if (result.length === 0) {
+      throw new Error("Bạn chưa liên kết tài khoản MoMo.");
+    }
+
+    if (result[0].momo_account) {
+      return {
+        code: 400,
+        message: "Tài khoản MoMo đã được liên kết trước đó.",
+      };
+    }
+
+    await db.execute("UPDATE user SET momo_account = ? WHERE id = ?", [
+      momoAccount.cardNumber,
+      userId,
+    ]);
+
+    return {
+      code: 200,
+      message: "Liên kết tài khoản MoMo thành công.",
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+async function getMoMoAccount(userId) {
+  try {
+    const [result] = await db.execute(
+      "SELECT momo_account FROM user WHERE id = ?",
+      [userId]
+    );
+    return result[0].momo_account;
+  } catch (error) {
+    throw error;
+  }
 }
 
 async function updateUser(userId, user, file) {
@@ -485,6 +529,8 @@ module.exports = {
   changePassword,
   getUserById,
   getUser,
+  linkMoMoAccount,
+  getMoMoAccount,
   getManager,
   updateUser,
   deleteUser,

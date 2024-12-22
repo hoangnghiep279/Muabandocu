@@ -35,7 +35,7 @@ router.post(
     }
   }
 );
-// Đăng nhập
+// Đăng nhập admin
 router.post("/admin-login", async (req, res, next) => {
   try {
     const result = await controller.adminLogin(req.body);
@@ -44,6 +44,7 @@ router.post("/admin-login", async (req, res, next) => {
     next(error);
   }
 });
+// Đăng nhập nguoi dung
 router.post("/user-login", async (req, res, next) => {
   try {
     const result = await controller.userLogin(req.body);
@@ -74,6 +75,23 @@ router.get("/profile", checkLogin, async (req, res, next) => {
     const userId = req.payload.id;
     const user = await controller.getUserById(userId);
     res.status(200).json({ data: user });
+  } catch (error) {
+    next(error);
+  }
+});
+// Lien ket vi momo
+router.post("/link-momo", checkLogin, async (req, res, next) => {
+  try {
+    const result = await controller.linkMoMoAccount(req.payload.id, req.body);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+router.get("/momo-account", checkLogin, async (req, res, next) => {
+  try {
+    const momoAccount = await controller.getMoMoAccount(req.payload.id);
+    res.status(200).json({ momoAccount });
   } catch (error) {
     next(error);
   }

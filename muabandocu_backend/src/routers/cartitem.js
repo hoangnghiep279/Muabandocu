@@ -17,7 +17,7 @@ router.get("/", checkLogin, async (req, res, next) => {
 router.post("/", checkLogin, async (req, res, next) => {
   try {
     const response = await controller.insertCartItem(req.payload.id, req.body);
-    res.status(response.code).json({ message: response.message });
+    res.status(response.code).json(response);
   } catch (error) {
     next(error);
   }

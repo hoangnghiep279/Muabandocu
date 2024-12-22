@@ -110,7 +110,14 @@ router.get("/search", async (req, res, next) => {
     next(error);
   }
 });
-
+router.get("/check-momo", checkLogin, async (req, res, next) => {
+  try {
+    const result = await controller.checkMomoLink(req.payload.id);
+    res.status(result.code).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
 // xem chi tiet
 router.get("/:id", async (req, res, next) => {
   try {
@@ -130,6 +137,8 @@ router.post("/", checkLogin, upload.array("images"), async (req, res, next) => {
     next(error);
   }
 });
+// check liên kết momo
+
 // sửa
 router.put(
   "/:id",

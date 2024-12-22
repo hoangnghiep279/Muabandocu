@@ -12,6 +12,7 @@ async function getCartItems(userId, page = 1, limit = 10) {
     if (cartResult.length === 0) {
       const err = new Error("Không tìm thấy giỏ hàng!");
       err.statusCode = 404;
+      Ư;
       throw err;
     }
 
@@ -104,8 +105,9 @@ async function insertCartItem(userId, product) {
 
     if (productOwnerId === userId) {
       return {
-        code: 403,
+        code: 200,
         message: "Bạn không thể thêm sản phẩm của chính mình vào giỏ hàng!",
+        typeToast: "warning",
       };
     }
 
@@ -131,6 +133,7 @@ async function insertCartItem(userId, product) {
       return {
         code: 200,
         message: "Sản phẩm đã có trong giỏ hàng!",
+        typeToast: "warning",
       };
     } else {
       await db.execute(
@@ -140,6 +143,7 @@ async function insertCartItem(userId, product) {
       return {
         code: 201,
         message: "Thêm sản phẩm vào giỏ hàng thành công!",
+        typeToast: "success",
       };
     }
   } catch (error) {

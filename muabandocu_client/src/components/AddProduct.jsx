@@ -3,6 +3,7 @@ import axios from "axios";
 import { ValidationProduct } from "../utils/Validation";
 import { fetchAddProduct } from "../apis/ProductApi";
 import { useNavigate } from "react-router-dom";
+import ConnectMomo from "./ConnectMomo";
 function AddProduct() {
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
@@ -17,7 +18,36 @@ function AddProduct() {
   const [files, setFiles] = useState([]);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
+  const [isMomoLinked, setIsMomoLinked] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
+
+  // Kiểm tra trạng thái liên kết MoMo
+  useEffect(() => {
+    const checkMomoLink = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:3000/products/check-momo",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const { linked, message } = res.data;
+
+        setIsMomoLinked(linked);
+      } catch (err) {
+        console.error("Lỗi khi kiểm tra trạng thái MoMo:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkMomoLink();
+  }, []);
+
   // Lấy danh sách loại sản phẩm
   useEffect(() => {
     const fetchCategories = async () => {
@@ -73,6 +103,14 @@ function AddProduct() {
       setErrors
     );
   };
+
+  if (loading) {
+    return <p>Đang kiểm tra trạng thái...</p>;
+  }
+
+  if (!isMomoLinked) {
+    return <ConnectMomo />;
+  }
 
   return (
     <div>

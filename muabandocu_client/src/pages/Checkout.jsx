@@ -71,6 +71,7 @@ function Checkout() {
       console.error("Error adding address:", error);
     }
   };
+  console.log(cartItems);
 
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
@@ -82,22 +83,23 @@ function Checkout() {
       return;
     }
 
-    console.log(cartItems);
+    const orderData = {
+      address_id: selectedAddress,
+      payment_method: paymentMethod,
+      shipfee: totalShipFee,
+      totalprice: totalAll,
+      products: cartItems.map(({ product_id, price, user_id }) => ({
+        product_id,
+        quantity: 1,
+        price,
+        seller_id: user_id,
+      })),
+      momoAccount: paymentMethod === "momo" ? "0559851334" : null,
+      redirectUrl:
+        paymentMethod === "momo" ? window.location.origin + "/account" : null,
+    };
 
     try {
-      const orderData = {
-        address_id: selectedAddress || null,
-        payment_method: paymentMethod || null,
-        shipfee: totalShipFee || 0,
-        totalprice: totalAll || 0,
-        products: cartItems.map(({ product_id, price, user_id }) => ({
-          product_id: product_id || null,
-          quantity: 1,
-          price: price || 0,
-          seller_id: user_id || null,
-        })),
-      };
-
       const orderResponse = await axios.post(
         "http://localhost:3000/order",
         orderData,
@@ -108,13 +110,16 @@ function Checkout() {
         }
       );
 
-      alert("Đặt hàng thành công!");
+      if (paymentMethod === "momo" && orderResponse.data.paymentUrl) {
+        window.location.href = orderResponse.data.paymentUrl;
+      } else {
+        alert("Đặt hàng thành công!");
+      }
     } catch (error) {
       console.error("Error placing order:", error);
       alert("Có lỗi xảy ra. Vui lòng thử lại.");
     }
   };
-
   return (
     <div className="py-8 container font-manrope">
       <h1 className="text-xl font-bold mb-4">Thanh toán</h1>
@@ -123,7 +128,7 @@ function Checkout() {
           <h2 className="text-lg font-bold mb-2">Sản phẩm</h2>
           {cartItems.map((item) => (
             <div
-              key={item.cartitem_id}
+              key={item.product_id}
               className="border-b py-2 flex justify-between"
             >
               <p className="font-medium first-letter:uppercase">{item.title}</p>

@@ -12,10 +12,13 @@ import UserProduct from "../components/UserProduct";
 import UserPendingProduct from "../components/UserPendingProduct";
 import AddProduct from "../components/AddProduct";
 import Address from "../components/Address";
+import ConnectMomo from "../components/ConnectMomo"; // Thêm ConnectMomo component
 
 function Account() {
   const [user, setUser] = useState(null);
   const [activeSection, setActiveSection] = useState("profile");
+  const [isMomoLinked, setIsMomoLinked] = useState(false);
+
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem("token");
@@ -29,6 +32,11 @@ function Account() {
 
     fetchUserData();
   }, []);
+
+  const handleLinkSuccess = () => {
+    setIsMomoLinked(true);
+    setActiveSection("addproduct"); // Chuyển sang trang thêm sản phẩm
+  };
 
   if (!user) {
     return <Loading />;
@@ -45,7 +53,11 @@ function Account() {
       case "pendingproduct":
         return <UserPendingProduct />;
       case "addproduct":
-        return <AddProduct />;
+        return !isMomoLinked ? (
+          <ConnectMomo onLinkSuccess={handleLinkSuccess} />
+        ) : (
+          <AddProduct />
+        );
       case "address":
         return <Address />;
       case "notifications":

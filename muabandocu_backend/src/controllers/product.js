@@ -6,6 +6,18 @@ const uploadMultipleImages =
 
 async function insertProduct(products, files, userId) {
   try {
+    const [user] = await db.execute(
+      "SELECT momo_account FROM user WHERE id = ?",
+      [userId]
+    );
+    if (!user[0]?.momo_account) {
+      const err = new Error(
+        "Bạn cần liên kết tài khoản MoMo trước khi thêm sản phẩm!"
+      );
+      err.statusCode = 403;
+      throw err;
+    }
+
     const [ExistingTitle] = await db.execute(
       `SELECT title FROM product WHERE title = ? AND user_id = ?`,
       [products.title, userId]
@@ -82,6 +94,26 @@ async function insertProduct(products, files, userId) {
     };
   } catch (error) {
     console.error(error);
+    throw error;
+  }
+}
+async function checkMomoLink(userId) {
+  try {
+    const [result] = await db.execute(
+      "SELECT momo_account FROM user WHERE id = ?",
+      [userId]
+    );
+
+    const isLinked = result.length > 0 && !!result[0].momo_account;
+
+    return {
+      code: 200,
+      linked: isLinked,
+      message: isLinked
+        ? "Đã liên kết MoMo."
+        : "Bạn chưa liên kết tài khoản MoMo!",
+    };
+  } catch (error) {
     throw error;
   }
 }
@@ -629,6 +661,7 @@ module.exports = {
   getPendingProducts,
   getProducts,
   insertProduct,
+  checkMomoLink,
   approveProduct,
   updateProduct,
   getDetailProduct,

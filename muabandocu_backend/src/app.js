@@ -5,7 +5,6 @@ const productRoutes = require("./routers/product");
 const categoryRoutes = require("./routers/category");
 const cartitem = require("./routers/cartitem");
 const address = require("./routers/address");
-const payment = require("./routers/payment");
 const order = require("./routers/order");
 const notification = require("./routers/notification");
 const path = require("path");
@@ -32,7 +31,6 @@ app.use("/products", productRoutes);
 app.use("/category", categoryRoutes);
 app.use("/cartitem", cartitem);
 app.use("/address", address);
-app.use("/payment", payment);
 app.use("/order", order);
 app.use("/notification", notification);
 

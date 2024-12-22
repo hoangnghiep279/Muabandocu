@@ -11,16 +11,11 @@ function Productcard({ product }) {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
-      navigate("/login"); // Chuyển hướng đến trang đăng nhập
+      navigate("/login");
       return;
     }
 
     const result = await addCartItem(product);
-    if (result.success) {
-      alert(result.message);
-    } else {
-      alert(result.message);
-    }
   };
   return (
     <div className="font-manropew w-[370px]">

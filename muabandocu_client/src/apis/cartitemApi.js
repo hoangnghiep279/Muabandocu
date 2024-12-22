@@ -55,7 +55,9 @@ const addCartItem = async (product) => {
         },
       }
     );
-    toast(response.data.message, { type: "success" });
+    console.log(response.data);
+
+    toast(response.data.message, { type: response.data.typeToast });
   } catch (error) {
     console.error("Lỗi khi thêm sản phẩm vào giỏ hàng:", error);
     alert(

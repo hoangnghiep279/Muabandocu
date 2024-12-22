@@ -39,7 +39,7 @@ const Header = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUnreadCount(0); // Đặt số thông báo chưa đọc về 0
+      setUnreadCount(0);
     } catch (error) {
       console.error("Error marking notifications as read:", error);
     }
@@ -61,8 +61,15 @@ const Header = () => {
   // GIO HANG
   useEffect(() => {
     getTotal(setTotalItem, token);
-  }, [totalItem]);
+  }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      getTotal(setTotalItem, token);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [token]);
   // TIM KIEM
   const handleSearch = (e) => {
     e.preventDefault();
@@ -105,7 +112,7 @@ const Header = () => {
   return (
     <header className="bg-primaryColor">
       {/* col-1 */}
-      <div className="container flex gap-10 py-7 justify-between text-white">
+      <div className="container flex gap-10 py-5 justify-between text-white">
         <NavLink
           to={"/"}
           className="text-2xl font-bold font-slab cursor-pointer"
@@ -120,7 +127,7 @@ const Header = () => {
               className="w-full h-full border-[1px] justify-between flex"
             >
               <input
-                className="default-input w-full px-2"
+                className="default-input w-full px-2 placeholder:text-[#ffffffcf]"
                 placeholder="Tìm kiếm sản phẩm"
                 type="text"
                 value={keyword}
@@ -191,7 +198,7 @@ const Header = () => {
         {login ? (
           <div className="mt-2">
             <div className="flex items-center gap-4 font-manrope">
-              <div className="flex relative text-white text-3xl mt-1">
+              <div className="flex relative text-white text-3xl mt-1 cursor-pointer">
                 <IoNotificationsOutline
                   onClick={() => {
                     setIsDropdownVisible(!isDropdownVisible);
@@ -206,7 +213,7 @@ const Header = () => {
                   </div>
                 )}
                 {isDropdownVisible && (
-                  <div className="absolute top-10 right-1/2 translate-x-1/2 box-shadow rounded-lg w-64 max-h-80 overflow-y-auto z-50">
+                  <div className="absolute top-10 right-1/2 translate-x-1/2 box-shadow rounded-lg w-72 max-h-80 overflow-y-auto z-50">
                     <ul>
                       {notifications.length > 0 ? (
                         notifications.map((notif) => (
