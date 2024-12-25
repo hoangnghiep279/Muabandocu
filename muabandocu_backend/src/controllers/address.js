@@ -1,22 +1,20 @@
 const db = require("../config/database");
-
+const { validatePhone } = require("../validations/validatePhone");
 async function getAddress(userId) {
   try {
     const [result] = await db.execute(
-      `SELECT
-        a.id,
-        a.user_id,
-        a.address,
-        a.district,
-        a.city,
-        u.name AS user_name,
-        u.phone AS user_phone
-      FROM
-        address a
-      JOIN
-        user u ON a.user_id = u.id
-      WHERE
-        a.user_id = ?`,
+      `SELECT 
+        id, 
+        user_id, 
+        name, 
+        phone, 
+        address, 
+        district, 
+        city 
+      FROM 
+        address 
+      WHERE 
+        user_id = ?`,
       [userId]
     );
 
@@ -38,53 +36,91 @@ async function getAddress(userId) {
 
 async function addAddress(userId, direction) {
   try {
-    if (!direction.address || !direction.district || !direction.city) {
-      const err = new Error("Thiếu thông tin địa chỉ hoặc không hợp lệ!");
+    // Kiểm tra thông tin đầu vào
+    if (
+      !direction.address ||
+      !direction.district ||
+      !direction.city ||
+      !direction.name ||
+      !direction.phone
+    ) {
+      const err = new Error("Thiếu thông tin địa chỉ, tên hoặc số điện thoại!");
       err.statusCode = 400;
       throw err;
     }
+
+    // Thêm địa chỉ mới
     const [result] = await db.execute(
       `INSERT INTO address (
-                  id,
-                  user_id,
-                  address,
-                  district,
-                  city
-              )
-              VALUES (
-                  uuid(),
-                  ?,
-                  ?,
-                  ?,
-                  ?
-              )`,
-      [userId, direction.address, direction.district, direction.city]
+        id,
+        user_id,
+        name,
+        phone,
+        address,
+        district,
+        city
+      )
+      VALUES (
+        uuid(),
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?
+      )`,
+      [
+        userId,
+        direction.name,
+        direction.phone,
+        direction.address,
+        direction.district,
+        direction.city,
+      ]
     );
+
     return {
       code: 201,
       message: "Thêm địa chỉ thành công!",
-      addressId: result.insertId,
     };
   } catch (error) {
     throw error;
   }
 }
+
 async function updateAddress(addressId, address) {
   try {
-    if (!address.address || !address.district || !address.city) {
-      const err = new Error("Thiếu thông tin địa chỉ hoặc không hợp lệ!");
+    // Kiểm tra thông tin đầu vào
+    if (
+      !address.name ||
+      !address.phone ||
+      !address.address ||
+      !address.district ||
+      !address.city
+    ) {
+      const err = new Error("Thiếu thông tin địa chỉ, tên hoặc số điện thoại!");
       err.statusCode = 400;
       throw err;
     }
 
+    // Cập nhật địa chỉ
     const [result] = await db.execute(
-      `UPDATE
-            address
-         SET
-            address = '${address.address}',
-            district = '${address.district}',
-            city = '${address.city}'
-         WHERE id = '${addressId}' `
+      `UPDATE address
+       SET
+         name = ?,
+         phone = ?,
+         address = ?,
+         district = ?,
+         city = ?
+       WHERE id = ?`,
+      [
+        address.name,
+        address.phone,
+        address.address,
+        address.district,
+        address.city,
+        addressId,
+      ]
     );
 
     if (result.affectedRows === 0) {

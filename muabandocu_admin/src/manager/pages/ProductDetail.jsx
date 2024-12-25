@@ -18,12 +18,14 @@ const ProductDetail = () => {
 
   const handleApprove = (productId) => {
     approveProduct(productId, setProduct);
+    navigate("/manager");
+    fetchProductDetail(setProduct, setLoading, id);
   };
 
   const handleReject = (productId) => {
     handleRejectProduct(productId, setProduct);
     navigate("/manager");
-    window.location.reload();
+    fetchProductDetail(setProduct, setLoading, id);
   };
 
   if (loading) return <Loading text={"Đang tải"} />;

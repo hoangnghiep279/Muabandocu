@@ -172,7 +172,8 @@ const fetchAddProduct = async (
   setFormData,
   setFiles,
   setMessage,
-  setErrors
+  setErrors,
+  navigative
 ) => {
   try {
     const token = localStorage.getItem("token");
@@ -196,6 +197,7 @@ const fetchAddProduct = async (
     });
     setFiles([]);
     setErrors({});
+    navigative("/account/pendingproduct");
     toast("thêm sản phẩm thành công", { type: "success" });
   } catch (err) {
     setMessage(err.response?.data?.message || "Đã xảy ra lỗi!");

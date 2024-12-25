@@ -34,8 +34,16 @@ const getTotal = async (setTotal, token) => {
         },
       }
     );
+    const cartItems = response.data.cartItems || [];
+    // Lọc các mục có approved !== 2
+    const validCartItems = cartItems.filter((item) => item.approved !== 2);
+    // Tính tổng số lượng từ các mục hợp lệ
+    const total = validCartItems.reduce(
+      (sum, item) => sum + item.cart_quantity,
+      0
+    );
 
-    setTotal(response.data.totalItems);
+    setTotal(total);
   } catch (error) {
     console.error("Lỗi khi lấy danh sách sản phẩm trong giỏ hàng:", error);
   }

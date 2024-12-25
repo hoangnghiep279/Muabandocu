@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-function ConnectMomo({ onLinkSuccess }) {
+function ConnectMomo() {
   const [cardNumber, setCardNumber] = useState("");
   const [message, setMessage] = useState("");
   const token = localStorage.getItem("token");
@@ -19,7 +19,7 @@ function ConnectMomo({ onLinkSuccess }) {
         }
       );
 
-      onLinkSuccess();
+      window.location.reload();
     } catch (err) {
       setMessage(err.response?.data?.message || "Lỗi liên kết tài khoản MoMo.");
     }

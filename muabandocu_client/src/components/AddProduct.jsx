@@ -4,6 +4,7 @@ import { ValidationProduct } from "../utils/Validation";
 import { fetchAddProduct } from "../apis/ProductApi";
 import { useNavigate } from "react-router-dom";
 import ConnectMomo from "./ConnectMomo";
+
 function AddProduct() {
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
@@ -36,9 +37,7 @@ function AddProduct() {
           }
         );
 
-        const { linked, message } = res.data;
-
-        setIsMomoLinked(linked);
+        setIsMomoLinked(res.data.linked);
       } catch (err) {
         console.error("Lỗi khi kiểm tra trạng thái MoMo:", err);
       } finally {
@@ -46,7 +45,7 @@ function AddProduct() {
       }
     };
     checkMomoLink();
-  }, []);
+  }, [token]);
 
   // Lấy danh sách loại sản phẩm
   useEffect(() => {
@@ -100,13 +99,10 @@ function AddProduct() {
       setFormData,
       setFiles,
       setMessage,
-      setErrors
+      setErrors,
+      navigate
     );
   };
-
-  if (loading) {
-    return <p>Đang kiểm tra trạng thái...</p>;
-  }
 
   if (!isMomoLinked) {
     return <ConnectMomo />;
@@ -115,7 +111,6 @@ function AddProduct() {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Thêm sản phẩm mới</h2>
-      {/* {message && <p className="text-green-500">{message}</p>} */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block font-medium">Tên sản phẩm:</label>
@@ -175,7 +170,7 @@ function AddProduct() {
           )}
         </div>
         <div>
-          <label className="block font-medium">Link Zalo:</label>
+          <label className="block font-medium">Liên hệ:</label>
           <input
             type="text"
             name="linkzalo"

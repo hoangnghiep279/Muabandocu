@@ -25,6 +25,7 @@ const Header = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(response.data.data);
+
       const count = response.data.data.filter((notif) => !notif.is_read).length;
       setUnreadCount(count);
     } catch (error) {
@@ -227,7 +228,7 @@ const Header = () => {
                           </li>
                         ))
                       ) : (
-                        <li className="p-3 text-gray-500">
+                        <li className="p-3 text-xs text-gray-500">
                           Không có thông báo nào.
                         </li>
                       )}
@@ -235,10 +236,11 @@ const Header = () => {
                   </div>
                 )}
               </div>
+
               <NavLink to={"/cart"}>
-                <div className="flex text-white ">
+                <div className="flex text-white">
                   <img src={cart} alt="" />
-                  <span>({totalItem})</span>
+                  {totalItem > 0 && <span>({totalItem})</span>}
                 </div>
               </NavLink>
 

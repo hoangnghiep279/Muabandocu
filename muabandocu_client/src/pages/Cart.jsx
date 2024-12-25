@@ -39,13 +39,16 @@ function Cart() {
       setLoading(true);
       fetchCartItems(
         (items) => {
-          const parsedItems = items.map((item) => ({
-            ...item,
-            price: Number(item.price),
-            shipfee: Number(item.shipfee),
-            product_quantity: Number(item.product_quantity),
-          }));
-          setCartItems(parsedItems);
+          const filteredItems = items
+            .map((item) => ({
+              ...item,
+              price: Number(item.price),
+              shipfee: Number(item.shipfee),
+              product_quantity: Number(item.product_quantity),
+            }))
+            .filter((item) => item.approved !== 2); // Loại sản phẩm approved = 2
+
+          setCartItems(filteredItems);
         },
         setTotalItem,
         setTotalPages,
@@ -74,8 +77,15 @@ function Cart() {
     const selectedPage = parseInt(event.target.value, 10);
     setPage(selectedPage);
   };
+
   const handleCheckout = () => {
-    const checkoutData = { cartItems, totalShipFee, totalAll };
+    // Chỉ lấy các sản phẩm hợp lệ
+    const validCartItems = cartItems.filter((item) => item.approved !== 2);
+    if (validCartItems.length === 0) {
+      toast("Không có sản phẩm hợp lệ để thanh toán!", { type: "error" });
+      return;
+    }
+    const checkoutData = { cartItems: validCartItems, totalShipFee, totalAll };
     navigate("/checkout", { state: checkoutData });
   };
 

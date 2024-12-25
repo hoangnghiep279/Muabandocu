@@ -1,8 +1,8 @@
+const phoneRegex = /(((\+|)84)|0)(3|5|7|8|9)+([0-9]{8})\b/;
 function Validation(values, fields = []) {
   const error = {};
 
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
-  const phoneRegex = /(((\+|)84)|0)(3|5|7|8|9)+([0-9]{8})\b/;
 
   // Validate email
   if (fields.includes("email")) {
@@ -131,10 +131,22 @@ function ValidationProduct(values, fields = [], files = []) {
   return error;
 }
 
-function ValidationCheckout(values, fields = []) {
+function ValidationAddress(values, fields = []) {
   const error = {};
 
   // Validate address
+  if (fields.includes("name")) {
+    if (!values.name || values.name.trim() === "") {
+      error.name = "Vui lòng nhập tên của bạn";
+    }
+  }
+  if (fields.includes("phone")) {
+    if (!values.phone || values.phone.trim() === "") {
+      error.phone = "Vui lòng nhập số điện thoại";
+    } else if (!phoneRegex.test(values.phone)) {
+      error.phone = "Số điện thoại không hợp lệ";
+    }
+  }
   if (fields.includes("address")) {
     if (!values.address || values.address.trim() === "") {
       error.address = "Vui lòng nhập địa chỉ";
@@ -158,4 +170,4 @@ function ValidationCheckout(values, fields = []) {
   return error;
 }
 
-export { Validation, ValidationProduct, ValidationCheckout };
+export { Validation, ValidationProduct, ValidationAddress };

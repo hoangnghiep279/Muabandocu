@@ -28,7 +28,9 @@ function ChangePassword() {
       alert(result.message);
       window.location.reload();
     } catch (error) {
-      setError(error.response?.data?.message || "Có lỗi xảy ra!");
+      setError(
+        error.response?.data?.message || "Mật khẩu hiện tại của bạn không đúng!"
+      );
     } finally {
       setIsLoading(false);
     }

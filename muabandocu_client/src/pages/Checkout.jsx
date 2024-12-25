@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { getAddresses, addAddress } from "../apis/addressApi";
-import { ValidationCheckout } from "../utils/Validation";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getAddresses, addAddress, updateAddress } from "../apis/addressApi";
+import { ValidationAddress } from "../utils/Validation";
 import axios from "axios";
 
 function Checkout() {
@@ -15,6 +15,8 @@ function Checkout() {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [newAddress, setNewAddress] = useState({
+    name: "",
+    phone: "",
     address: "",
     district: "",
     city: "",
@@ -22,7 +24,8 @@ function Checkout() {
   const [errors, setErrors] = useState({});
   const [districts, setDistricts] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState("");
-
+  const [editingAddress, setEditingAddress] = useState(null); //luu dia chi khi sua
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   const vietnamData = {
@@ -35,13 +38,55 @@ function Checkout() {
     getAddresses(setAddresses, token);
   }, [token]);
 
+  // sửa địa chi
+  const handleEditAddress = (address) => {
+    setEditingAddress(address); // Hiển thị form sửa
+  };
+
+  const handleUpdateAddressSubmit = async () => {
+    const validationErrors = ValidationAddress(editingAddress, [
+      "name",
+      "phone",
+      "address",
+      "district",
+      "city",
+    ]);
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    try {
+      await updateAddress(
+        editingAddress.id,
+        editingAddress,
+        (updatedAddress) => {
+          setAddresses((prevAddresses) =>
+            prevAddresses.map((addr) =>
+              addr.id === updatedAddress.id ? updatedAddress : addr
+            )
+          );
+          setEditingAddress(null); // Đóng form sửa
+        },
+        token
+      );
+      getAddresses(setAddresses, token);
+    } catch (error) {
+      console.error("Error updating address:", error);
+    }
+  };
+
+  // chon dia chi
   const handleCityChange = (city) => {
     setNewAddress({ ...newAddress, city, district: "" });
     setDistricts(vietnamData[city] || []);
   };
 
   const handleNewAddressSubmit = async () => {
-    const validationErrors = ValidationCheckout(newAddress, [
+    const validationErrors = ValidationAddress(newAddress, [
+      "name",
+      "phone",
       "address",
       "district",
       "city",
@@ -59,6 +104,8 @@ function Checkout() {
           setAddresses((prevAddresses) => [...prevAddresses, newAddr]);
           setSelectedAddress(newAddr.id);
           setNewAddress({
+            name: "",
+            phone: "",
             address: "",
             district: "",
             city: "",
@@ -67,11 +114,11 @@ function Checkout() {
         },
         token
       );
+      window.location.reload();
     } catch (error) {
       console.error("Error adding address:", error);
     }
   };
-  console.log(cartItems);
 
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
@@ -96,7 +143,9 @@ function Checkout() {
       })),
       momoAccount: paymentMethod === "momo" ? "0559851334" : null,
       redirectUrl:
-        paymentMethod === "momo" ? window.location.origin + "/account" : null,
+        paymentMethod === "momo"
+          ? window.location.origin + "/account/prepareOrder"
+          : null,
     };
 
     try {
@@ -114,6 +163,7 @@ function Checkout() {
         window.location.href = orderResponse.data.paymentUrl;
       } else {
         alert("Đặt hàng thành công!");
+        navigate("/account/pendingOrder");
       }
     } catch (error) {
       console.error("Error placing order:", error);
@@ -149,16 +199,131 @@ function Checkout() {
             <div>
               {addresses.map((address) => (
                 <div key={address.id} className="mb-2">
-                  <label>
-                    <input
-                      type="radio"
-                      name="address"
-                      value={address.id}
-                      checked={selectedAddress === address.id}
-                      onChange={() => setSelectedAddress(address.id)}
-                    />
-                    {`${address.address}, ${address.district}, ${address.city} (${address.user_name} - ${address.user_phone})`}
-                  </label>
+                  {editingAddress?.id === address.id ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleUpdateAddressSubmit();
+                      }}
+                      className="flex flex-col gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={editingAddress.name}
+                        onChange={(e) =>
+                          setEditingAddress({
+                            ...editingAddress,
+                            name: e.target.value,
+                          })
+                        }
+                      />
+                      {errors.name && (
+                        <p className="text-red-500 text-sm">{errors.name}</p>
+                      )}
+                      <input
+                        type="text"
+                        value={editingAddress.phone}
+                        onChange={(e) =>
+                          setEditingAddress({
+                            ...editingAddress,
+                            phone: e.target.value,
+                          })
+                        }
+                      />
+                      {errors.phone && (
+                        <p className="text-red-500 text-sm">{errors.phone}</p>
+                      )}
+                      <input
+                        type="text"
+                        value={editingAddress.address}
+                        onChange={(e) =>
+                          setEditingAddress({
+                            ...editingAddress,
+                            address: e.target.value,
+                          })
+                        }
+                      />
+                      {errors.address && (
+                        <p className="text-red-500 text-sm">{errors.address}</p>
+                      )}
+
+                      <select
+                        value={editingAddress.city}
+                        onChange={(e) => {
+                          setEditingAddress({
+                            ...editingAddress,
+                            city: e.target.value,
+                          });
+                          setDistricts(vietnamData[e.target.value] || []);
+                        }}
+                      >
+                        <option value="">Chọn Thành phố</option>
+                        {Object.keys(vietnamData).map((city, index) => (
+                          <option key={index} value={city}>
+                            {city}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.city && (
+                        <p className="text-red-500 text-sm">{errors.city}</p>
+                      )}
+
+                      <select
+                        value={editingAddress.district}
+                        onChange={(e) =>
+                          setEditingAddress({
+                            ...editingAddress,
+                            district: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">Chọn Quận/Huyện</option>
+                        {districts.map((district, index) => (
+                          <option key={index} value={district}>
+                            {district}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.district && (
+                        <p className="text-red-500 text-sm">
+                          {errors.district}
+                        </p>
+                      )}
+
+                      <button
+                        type="submit"
+                        className="bg-primaryColor text-white py-2"
+                      >
+                        Lưu
+                      </button>
+                      <button
+                        type="button"
+                        className="bg-gray-500 text-white py-2 mt-2"
+                        onClick={() => setEditingAddress(null)}
+                      >
+                        Hủy
+                      </button>
+                    </form>
+                  ) : (
+                    <>
+                      <label>
+                        <input
+                          type="radio"
+                          name="address"
+                          value={address.id}
+                          checked={selectedAddress === address.id}
+                          onChange={() => setSelectedAddress(address.id)}
+                        />
+                        {`${address.address}, ${address.district}, ${address.city} (${address.name} - ${address.phone})`}
+                      </label>
+                      <button
+                        className="ml-4 py-1 px-4 bg-primaryColor text-white rounded-lg"
+                        onClick={() => handleEditAddress(address)}
+                      >
+                        Sửa
+                      </button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -172,6 +337,28 @@ function Checkout() {
             >
               <h3 className="text-md font-bold">Thêm địa chỉ mới</h3>
 
+              <input
+                type="text"
+                placeholder="Tên của bạn"
+                value={newAddress.name}
+                onChange={(e) =>
+                  setNewAddress({ ...newAddress, name: e.target.value })
+                }
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm">{errors.name}</p>
+              )}
+              <input
+                type="text"
+                placeholder="Số điện thoại của bạn"
+                value={newAddress.phone}
+                onChange={(e) =>
+                  setNewAddress({ ...newAddress, phone: e.target.value })
+                }
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-sm">{errors.phone}</p>
+              )}
               <input
                 type="text"
                 placeholder="Địa chỉ"

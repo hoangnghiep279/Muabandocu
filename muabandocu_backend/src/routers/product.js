@@ -10,6 +10,14 @@ const { log } = require("console");
 const upload = multer({
   dest: path.join(__dirname, "../resources/products-img"),
 });
+router.get("/check-momo", checkLogin, async (req, res, next) => {
+  try {
+    const result = await controller.checkMomoLink(req.payload.id);
+    res.status(result.code).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
 //danh sach chờ duyệt
 router.get(
   "/pending",
@@ -110,14 +118,7 @@ router.get("/search", async (req, res, next) => {
     next(error);
   }
 });
-router.get("/check-momo", checkLogin, async (req, res, next) => {
-  try {
-    const result = await controller.checkMomoLink(req.payload.id);
-    res.status(result.code).json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+
 // xem chi tiet
 router.get("/:id", async (req, res, next) => {
   try {

@@ -22,7 +22,7 @@ import card9 from "../assets/imgs/card9.png";
 import card10 from "../assets/imgs/card10.png";
 import card11 from "../assets/imgs/card11.png";
 import card12 from "../assets/imgs/card12.png";
-
+import orderimg from "../assets/imgs/order.png";
 export {
   search,
   cart,
@@ -36,6 +36,7 @@ export {
   slide3,
   slide4,
   rate,
+  orderimg,
 };
 
 export const card = [

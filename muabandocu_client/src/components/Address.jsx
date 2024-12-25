@@ -6,7 +6,7 @@ import {
   deleteAddress,
 } from "../apis/addressApi";
 import { CiSquarePlus } from "react-icons/ci";
-import { toast } from "react-toastify";
+import { ValidationAddress } from "../utils/Validation";
 
 const vietnamData = {
   "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Tây Hồ", "Cầu Giấy", "Đống Đa"],
@@ -19,10 +19,13 @@ function Address() {
   const [showForm, setShowForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [formAddress, setFormAddress] = useState({
+    name: "",
+    phone: "",
     address: "",
     district: "",
     city: "",
   });
+  const [errors, setErrors] = useState({});
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -40,8 +43,20 @@ function Address() {
   };
 
   const districts = vietnamData[formAddress.city] || [];
-
+  // them dia chi
   const handleAddAddress = async () => {
+    const validationErrors = ValidationAddress(formAddress, [
+      "name",
+      "phone",
+      "address",
+      "district",
+      "city",
+    ]);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
       await addAddress(
         formAddress,
@@ -51,14 +66,17 @@ function Address() {
         },
         token
       );
+      getAddresses(setAddressList, token);
     } catch (error) {
       console.error("Lỗi khi thêm địa chỉ:", error);
     }
   };
-
+  // update
   const handleEditAddress = (address) => {
     setEditingAddress(address);
     setFormAddress({
+      name: address.name,
+      phone: address.phone,
       address: address.address,
       district: address.district,
       city: address.city,
@@ -67,6 +85,18 @@ function Address() {
   };
 
   const handleUpdateAddress = async () => {
+    const validationErrors = ValidationAddress(formAddress, [
+      "name",
+      "phone",
+      "address",
+      "district",
+      "city",
+    ]);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
       await updateAddress(
         editingAddress.id,
@@ -84,6 +114,7 @@ function Address() {
         },
         token
       );
+      getAddresses(setAddressList, token);
     } catch (error) {
       console.error("Lỗi khi cập nhật địa chỉ:", error);
     }
@@ -121,10 +152,10 @@ function Address() {
               >
                 <p>
                   <span className="font-medium pr-4 border-r-2">
-                    {address.user_name}
+                    {address.name}
                   </span>{" "}
                   <span className="opacity-70 pl-4 text-sm">
-                    {address.user_phone}
+                    {address.phone}
                   </span>
                 </p>
                 <p className="opacity-70 text-sm mt-1">{address.address}</p>
@@ -164,6 +195,26 @@ function Address() {
           </h2>
           <input
             type="text"
+            placeholder="Nhập tên của bạn"
+            value={formAddress.name}
+            onChange={(e) =>
+              setFormAddress({ ...formAddress, name: e.target.value })
+            }
+            className="border p-2 rounded-md w-full mb-2"
+          />
+          {errors.name && <p className="text-red-500">{errors.name}</p>}
+          <input
+            type="text"
+            placeholder="Nhập số điện thoại của bạn"
+            value={formAddress.phone}
+            onChange={(e) =>
+              setFormAddress({ ...formAddress, phone: e.target.value })
+            }
+            className="border p-2 rounded-md w-full mb-2"
+          />
+          {errors.phone && <p className="text-red-500">{errors.phone}</p>}
+          <input
+            type="text"
             placeholder="Địa chỉ chi tiết"
             value={formAddress.address}
             onChange={(e) =>
@@ -171,6 +222,7 @@ function Address() {
             }
             className="border p-2 rounded-md w-full mb-2"
           />
+          {errors.address && <p className="text-red-500">{errors.address}</p>}
           <select
             value={formAddress.city}
             onChange={handleCityChange}
@@ -183,6 +235,7 @@ function Address() {
               </option>
             ))}
           </select>
+          {errors.city && <p className="text-red-500">{errors.city}</p>}
           <select
             value={formAddress.district}
             onChange={handleDistrictChange}
@@ -196,6 +249,7 @@ function Address() {
               </option>
             ))}
           </select>
+          {errors.district && <p className="text-red-500">{errors.district}</p>}
           <button
             onClick={editingAddress ? handleUpdateAddress : handleAddAddress}
             className="bg-blue-500 text-white py-2 px-4 rounded-md"

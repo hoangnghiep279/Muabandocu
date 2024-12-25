@@ -3,7 +3,7 @@ import { fetchProductsApproved, deleteProduct } from "../apis/ProductApi";
 import { IoArrowForwardOutline, IoArrowBackSharp } from "react-icons/io5";
 import { Link } from "react-router-dom";
 
-const UserPendingProduct = () => {
+const UserProduct = () => {
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -112,4 +112,4 @@ const UserPendingProduct = () => {
   );
 };
 
-export default UserPendingProduct;
+export default UserProduct;

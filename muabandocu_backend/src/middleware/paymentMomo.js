@@ -40,7 +40,10 @@ const processPaymentMoMo = async (req, res, next) => {
     const orderInfo = "pay with MoMo";
     const orderId = partnerCode + new Date().getTime();
     const requestId = orderId;
-    const extraData = `${momoAccount}`;
+    const extraData = JSON.stringify({
+      momoAccount,
+      recipient: "0559851334",
+    });
 
     const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=payWithMethod`;
 

@@ -30,7 +30,7 @@ const fetchProductDetail = async (setProduct, setLoading, id) => {
   }
 };
 // Duyệt sản phẩm
-const approveProduct = async (productId, setProducts) => {
+const approveProduct = async (productId, setProducts, navigate) => {
   try {
     const response = await axios.post(
       `http://localhost:3000/products/${productId}/approve`,

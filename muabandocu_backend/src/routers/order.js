@@ -6,10 +6,78 @@ const controller = require("../controllers/order");
 const { checkLogin } = require("../middleware/checkLogin");
 const { processPaymentMoMo } = require("../middleware/paymentMomo");
 
+// Danh sách đơn hàng chờ duyệt
+router.get("/pending-orders", checkLogin, async (req, res, next) => {
+  try {
+    const result = await controller.getPendingOrders(req.payload.id);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+// Duyệt đơn hàng
+router.post("/approve", checkLogin, async (req, res, next) => {
+  try {
+    const { orderItemId, newStatus } = req.body;
+    console.log(req.body);
+
+    if (!orderItemId || typeof newStatus !== "number") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request data.",
+      });
+    }
+
+    const result = await controller.approveOrderItem(orderItemId, newStatus);
+    if (result) {
+      res.json({
+        success: true,
+        message: "Order item status updated successfully.",
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "Failed to update order item status.",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+router.get("/product-orders", checkLogin, async (req, res, next) => {
+  try {
+    const result = await controller.getProcessedOrders(req.payload.id);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+//lay san pham đã đặt hàng
+router.get("/:status", checkLogin, async (req, res, next) => {
+  try {
+    const { status } = req.params;
+
+    if (!status) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Status is required" });
+    }
+    const response = await controller.getProductsByOrderStatus(
+      status,
+      req.payload.id
+    );
+
+    // Phản hồi thành công
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// đặt hàng
 router.post("/", checkLogin, processPaymentMoMo, async (req, res, next) => {
   try {
-    console.log("Request body for creating order:", req.body); // Kiểm tra dữ liệu gửi lên
-
     if (req.body.payment_method === "momo") {
       const result = await controller.createOrder(
         req.body,
@@ -17,7 +85,6 @@ router.post("/", checkLogin, processPaymentMoMo, async (req, res, next) => {
         req.paymentUrl,
         req.orderIdFromMoMo
       );
-      console.log("Order created before MoMo payment:", result);
 
       return res.status(200).json({
         success: true,
@@ -34,12 +101,9 @@ router.post("/", checkLogin, processPaymentMoMo, async (req, res, next) => {
     next(error);
   }
 });
-
 router.post("/momo-ipn", async (req, res, next) => {
   try {
     const { orderId, resultCode } = req.body;
-
-    console.log("IPN from MoMo:", req.body);
 
     if (!orderId) {
       return res
@@ -59,18 +123,27 @@ router.post("/momo-ipn", async (req, res, next) => {
         .json({ success: false, message: "Invalid orderId" });
     }
 
-    if (resultCode === "0") {
+    const orderRecord = orderCheck[0];
+
+    if (resultCode === "0" || resultCode === 0) {
       // Thành công
       await db.execute(
         "UPDATE `order` SET status = 1 WHERE momo_order_id = ?",
         [orderId]
       );
+      await db.execute(
+        "UPDATE `order_items` SET delivery_status = 1 WHERE order_id = ?",
+        [orderRecord.id]
+      );
       res.status(200).json({ success: true, message: "Thanh toán thành công" });
     } else {
-      // Nếu có lỗi hoặc thanh toán thất bại
       await db.execute(
-        "UPDATE `order` SET status = 1 WHERE momo_order_id = ?",
+        "UPDATE `order` SET status = 9 WHERE momo_order_id = ?",
         [orderId]
+      );
+      await db.execute(
+        "UPDATE `order_items` SET delivery_status = 9 WHERE order_id = ?",
+        [orderRecord.id]
       );
       res
         .status(200)

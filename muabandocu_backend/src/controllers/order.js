@@ -1,5 +1,232 @@
 const db = require("../config/database");
-const crypto = require("crypto");
+
+const getProductsByOrderStatus = async (status, userId) => {
+  try {
+    // Truy vấn đơn hàng
+    const [orders] = await db.execute(
+      `
+      SELECT
+        o.id AS order_id,
+        o.shipfee,
+        o.totalprice
+      FROM
+        \`order\` AS o
+      WHERE
+        o.user_id = ?;
+    `,
+      [userId]
+    );
+
+    if (orders.length === 0) {
+      return {
+        success: false,
+        message: "No orders found",
+      };
+    }
+
+    // Lấy danh sách order_id
+    const orderIds = orders.map((order) => order.order_id);
+
+    const orderIdsString = orderIds.map((id) => `'${id}'`).join(", ");
+
+    // Truy vấn sản phẩm
+    const [orderItems] = await db.execute(
+      `
+      SELECT
+        oi.order_id,
+        oi.id,
+        p.id AS product_id,
+        p.title AS product_name,
+        p.price AS product_price,
+        p.shipfee AS product_shipfee
+      FROM
+        order_items AS oi
+      JOIN
+        product AS p
+      ON
+        oi.product_id = p.id
+      WHERE
+        oi.delivery_status = '${status}' AND oi.order_id IN (${orderIdsString});
+      `
+    );
+
+    // Truy vấn hình ảnh nếu có sản phẩm
+    let images = [];
+    if (orderItems.length > 0) {
+      const productIds = orderItems.map((item) => item.product_id);
+      const productIdsString = productIds.map((id) => `'${id}'`).join(", ");
+
+      [images] = await db.execute(
+        `
+        SELECT
+          product_id,
+          img_url
+        FROM
+          image
+        WHERE
+          product_id IN (${productIdsString});
+        `
+      );
+    }
+
+    // Ghép thông tin
+    const results = orders
+      .map((order) => {
+        const products = orderItems
+          .filter((item) => item.order_id === order.order_id)
+          .map((item) => ({
+            order_item_id: item.id,
+            product_name: item.product_name,
+            product_price: item.product_price,
+            product_shipfee: item.product_shipfee,
+            images: images
+              .filter((img) => img.product_id === item.product_id)
+              .map((img) => img.img_url),
+          }));
+
+        // Chỉ trả về các đơn hàng có sản phẩm
+        if (products.length === 0) {
+          return null;
+        }
+
+        return {
+          order_id: order.order_id,
+          shipfee: order.shipfee,
+          totalprice: order.totalprice,
+          products,
+        };
+      })
+      .filter((order) => order !== null); // Loại bỏ các đơn hàng không có sản phẩm
+
+    return {
+      success: "true",
+      data: results,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getPendingOrders = async (sellerId) => {
+  try {
+    const query = `
+      SELECT 
+          oi.id AS order_item_id,
+          p.title AS product_name,
+          p.price AS product_price,
+          p.shipfee AS shipping_fee,
+          MIN(i.img_url) AS product_image, 
+          o.address_id,
+          o.created_at,
+          a.name AS customer_name,
+          a.phone AS customer_phone,
+          a.address AS customer_address,
+          a.district AS customer_district,
+          a.city AS customer_city
+      FROM 
+          order_items oi
+      JOIN 
+          product p ON oi.product_id = p.id
+      LEFT JOIN 
+          image i ON p.id = i.product_id
+      JOIN 
+          \`order\` o ON oi.order_id = o.id
+      JOIN 
+          address a ON o.address_id = a.id
+      WHERE 
+          oi.seller_id = ? 
+          AND oi.delivery_status IN (0, 1)
+      GROUP BY 
+          oi.id; -- Nhóm theo từng mục đơn hàng
+    `;
+    const [pendingOrders] = await db.query(query, [sellerId]);
+
+    if (pendingOrders.length === 0) {
+      return { message: "Bạn chưa bán được sản phẩm nào." };
+    }
+
+    return pendingOrders;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getProcessedOrders = async (sellerId) => {
+  try {
+    const query = `
+      SELECT 
+          oi.id AS order_item_id,
+          oi.delivery_status,
+          p.title AS product_name,
+          p.price AS product_price,
+          p.shipfee AS shipping_fee,
+          MIN(i.img_url) AS product_image, 
+          o.address_id,
+          o.created_at,
+          a.name AS customer_name,
+          a.phone AS customer_phone,
+          a.address AS customer_address,
+          a.district AS customer_district,
+          a.city AS customer_city
+      FROM 
+          order_items oi
+      JOIN 
+          product p ON oi.product_id = p.id
+      LEFT JOIN 
+          image i ON p.id = i.product_id
+      JOIN 
+          \`order\` o ON oi.order_id = o.id
+      JOIN 
+          address a ON o.address_id = a.id
+      WHERE 
+          oi.seller_id = ? 
+          AND oi.delivery_status IN (2, 3) -- Điều kiện delivery_status bằng 2 hoặc 3
+      GROUP BY 
+          oi.id; -- Nhóm theo từng mục đơn hàng
+    `;
+    const [processedOrders] = await db.query(query, [sellerId]);
+
+    if (processedOrders.length === 0) {
+      return { message: "Không có đơn hàng nào đang xử lý hoặc đã xử lý." };
+    }
+
+    return processedOrders;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const approveOrderItem = async (orderItemId, newStatus) => {
+  try {
+    // Kiểm tra xem order_item có tồn tại không
+    const [existingOrderItem] = await db.query(
+      `
+      SELECT oi.id
+      FROM order_items AS oi
+      WHERE oi.id = ?;
+      `,
+      [orderItemId]
+    );
+
+    if (!existingOrderItem) {
+      throw new Error("Order item does not exist.");
+    }
+
+    // Cập nhật trạng thái của order_item
+    const [result] = await db.query(
+      `
+      UPDATE order_items 
+      SET delivery_status = ? 
+      WHERE id = ?;
+      `,
+      [newStatus, orderItemId]
+    );
+
+    return result.affectedRows > 0; // Trả về true nếu cập nhật thành công
+  } catch (error) {
+    throw error;
+  }
+};
 
 async function createOrder(
   orders,
@@ -9,7 +236,6 @@ async function createOrder(
 ) {
   try {
     // Kiểm tra giá trị của `orders` và `products` trước khi thực thi
-    console.log("Received order data:", orders);
     if (!orders.products || orders.products.length === 0) {
       throw new Error("Không có sản phẩm trong đơn hàng.");
     }
@@ -25,9 +251,9 @@ async function createOrder(
     }
 
     const commissionRate = 0.05; // 5% hoa hồng
-    const commission = orders.totalprice * commissionRate;
-    const netAmount = orders.totalprice - commission;
-
+    const commission =
+      Math.round(orders.totalprice * commissionRate * 100) / 100;
+    const netAmount = Math.round((orders.totalprice - commission) * 100) / 100;
     await db.execute(
       `INSERT INTO \`order\` 
         (id, user_id, address_id, status, payment_method, shipfee, totalprice, commission_amount, net_amount, momo_order_id, momo_payment_url,  total_revenue, admin_paid) 
@@ -54,7 +280,6 @@ async function createOrder(
     const sellerProducts = {};
 
     for (const product of orders.products) {
-      console.log("Processing product:", product); // Kiểm tra sản phẩm
       const [productResult] = await db.execute(
         "SELECT user_id FROM product WHERE id = ?",
         [product.product_id]
@@ -78,6 +303,8 @@ async function createOrder(
         product.product_id,
         product.quantity || 1,
         product.price || 0,
+        productSellerId,
+        0,
       ]);
       productIdsToUpdate.push(product.product_id);
 
@@ -88,7 +315,9 @@ async function createOrder(
     }
 
     await db.query(
-      `INSERT INTO \`order_items\` (\`id\`, \`order_id\`, \`product_id\`, \`quantity\`, \`price\`) VALUES ?`,
+      `INSERT INTO \`order_items\` 
+      (\`id\`, \`order_id\`, \`product_id\`, \`quantity\`, \`price\`, \`seller_id\`, \`delivery_status\`) 
+    VALUES ?`,
       [orderItems]
     );
 
@@ -138,4 +367,10 @@ async function createOrder(
   }
 }
 
-module.exports = { createOrder };
+module.exports = {
+  createOrder,
+  getProductsByOrderStatus,
+  getProcessedOrders,
+  getPendingOrders,
+  approveOrderItem,
+};
