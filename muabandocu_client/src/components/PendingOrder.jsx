@@ -32,6 +32,31 @@ function PendingOrder() {
     fetchOrders();
   }, [token]);
 
+  const cancelOrder = async (orderId) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/order/cancel",
+        { orderId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setOrders((prevOrders) =>
+          prevOrders.filter((order) => order.order_id !== orderId)
+        );
+        alert(response.data.message);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("Có lỗi khi hủy đơn hàng!");
+      console.error(err);
+    }
+  };
   if (loading) {
     return <div>Đang tải dữ liệu...</div>;
   }
@@ -95,6 +120,12 @@ function PendingOrder() {
                       </p>
                     </>
                   )}
+                  <button
+                    onClick={() => cancelOrder(order.order_id)}
+                    className="mt-4 bg-red-500 text-white py-2 px-4 rounded"
+                  >
+                    Hủy Đơn Hàng
+                  </button>
                 </div>
               </div>
             );

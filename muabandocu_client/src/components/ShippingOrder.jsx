@@ -20,8 +20,6 @@ function ShippingOrder() {
           },
         });
 
-        console.log("Fetch Orders Response:", response.data);
-
         if (response.data.success && response.data.data.length > 0) {
           setOrders(response.data.data);
         } else {

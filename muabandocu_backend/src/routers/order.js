@@ -101,9 +101,64 @@ router.post("/", checkLogin, processPaymentMoMo, async (req, res, next) => {
     next(error);
   }
 });
+// router.post("/momo-ipn", async (req, res, next) => {
+//   try {
+//     const { orderId, resultCode } = req.body;
+//     console.log(req.body);
+
+//     if (!orderId) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "orderId is missing" });
+//     }
+
+//     // Kiểm tra xem orderId có tồn tại trong cơ sở dữ liệu không
+//     const [orderCheck] = await db.execute(
+//       "SELECT * FROM `order` WHERE momo_order_id = ?",
+//       [orderId]
+//     );
+
+//     if (orderCheck.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Invalid orderId" });
+//     }
+
+//     const orderRecord = orderCheck[0];
+
+//     if (resultCode === "0" || resultCode === 0) {
+//       // Thành công
+//       await db.execute(
+//         "UPDATE `order` SET status = 1 WHERE momo_order_id = ?",
+//         [orderId]
+//       );
+//       await db.execute(
+//         "UPDATE `order_items` SET delivery_status = 1 WHERE order_id = ?",
+//         [orderRecord.id]
+//       );
+//       res.status(200).json({ success: true, message: "Thanh toán thành công" });
+//     } else {
+//       await db.execute(
+//         "UPDATE `order` SET status = 9 WHERE momo_order_id = ?",
+//         [orderId]
+//       );
+//       await db.execute(
+//         "UPDATE `order_items` SET delivery_status = 9 WHERE order_id = ?",
+//         [orderRecord.id]
+//       );
+//       res
+//         .status(200)
+//         .json({ success: true, message: "Thanh toán không thành công" });
+//     }
+//   } catch (error) {
+//     console.error("Lỗi xử lý IPN MoMo:", error.message);
+//     next(error);
+//   }
+// });
 router.post("/momo-ipn", async (req, res, next) => {
   try {
     const { orderId, resultCode } = req.body;
+    console.log(req.body);
 
     if (!orderId) {
       return res
@@ -135,6 +190,22 @@ router.post("/momo-ipn", async (req, res, next) => {
         "UPDATE `order_items` SET delivery_status = 1 WHERE order_id = ?",
         [orderRecord.id]
       );
+
+      // Lấy danh sách sản phẩm liên quan đến đơn hàng
+      const [orderItems] = await db.execute(
+        "SELECT product_id FROM `order_items` WHERE order_id = ?",
+        [orderRecord.id]
+      );
+
+      const productIdsToUpdate = orderItems.map((item) => item.product_id);
+
+      // Cập nhật trạng thái sản phẩm
+      if (productIdsToUpdate.length > 0) {
+        await db.query("UPDATE product SET approved = 2 WHERE id IN (?)", [
+          productIdsToUpdate,
+        ]);
+      }
+
       res.status(200).json({ success: true, message: "Thanh toán thành công" });
     } else {
       await db.execute(
@@ -151,6 +222,25 @@ router.post("/momo-ipn", async (req, res, next) => {
     }
   } catch (error) {
     console.error("Lỗi xử lý IPN MoMo:", error.message);
+    next(error);
+  }
+});
+
+// hủy đơn hàng
+router.post("/cancel", checkLogin, async (req, res, next) => {
+  try {
+    const { orderId } = req.body;
+
+    if (!orderId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "orderId is required" });
+    }
+
+    const result = await controller.cancelOrder(orderId);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Lỗi hủy đơn hàng:", error.message);
     next(error);
   }
 });

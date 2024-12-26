@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Route, Routes, NavLink, useNavigate } from "react-router-dom";
+import {
+  Route,
+  Routes,
+  NavLink,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import Loading from "../components/Loading";
 import { FaRegUser } from "react-icons/fa6";
 import { BsHandbag } from "react-icons/bs";
@@ -13,7 +19,6 @@ import UserProduct from "../components/UserProduct";
 import UserPendingProduct from "../components/UserPendingProduct";
 import AddProduct from "../components/AddProduct";
 import Address from "../components/Address";
-// import Notifications from "../components/Notifications";
 import ConnectMomo from "../components/ConnectMomo";
 import PendingOrder from "../components/PendingOrder";
 import PrepareOrder from "../components/PrepareOrder";
@@ -21,12 +26,44 @@ import ShippingOrder from "../components/ShippingOrder";
 import RecievedOrder from "../components/RecievedOrder";
 import ManageMyOrder from "../components/ManageMyOrder";
 import ProductOrder from "../components/ProductOrder";
+import MyRevenue from "../components/MyRevenue";
 
 function Account() {
   const [user, setUser] = useState(null);
   const [isMomoLinked, setIsMomoLinked] = useState(false);
   const [openMenu, setOpenMenu] = useState(null);
   const navigate = useNavigate();
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes("profile") || path.includes("changePassword")) {
+      setOpenMenu("account");
+    } else if (
+      path.includes("userProduct") ||
+      path.includes("pendingproduct") ||
+      path.includes("addproduct")
+    ) {
+      setOpenMenu("products");
+    } else if (
+      path.includes("pendingOrder") ||
+      path.includes("prepareOrder") ||
+      path.includes("shippingOrder") ||
+      path.includes("receivedOrder")
+    ) {
+      setOpenMenu("orders");
+    } else if (
+      path.includes("manageMyorder") ||
+      path.includes("productOrder")
+    ) {
+      setOpenMenu("manageMyorder");
+    } else if (path.includes("myrevenue") || path.includes("productOrder")) {
+      setOpenMenu("myrevenue");
+    } else {
+      setOpenMenu(null);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -255,6 +292,41 @@ function Account() {
                 </NavLink>
               </ul>
             </li>
+            <li className="cursor-pointer">
+              <NavLink
+                to="myrevenue"
+                className="flex items-center gap-2 font-medium cursor-pointer"
+                onClick={() => handleToggleMenu("myrevenue")}
+              >
+                <MdOutlineShoppingBag /> Doanh thu
+              </NavLink>
+              <ul
+                className={`text-sm ml-7 mt-3  duration-1000 ${
+                  openMenu === "myrevenue" ? "block" : "hidden"
+                }`}
+              >
+                <NavLink
+                  to="myrevenue"
+                  className={({ isActive }) =>
+                    isActive
+                      ? "font-bold block my-3 cursor-pointer"
+                      : "my-3 block opacity-80 cursor-pointer"
+                  }
+                >
+                  <li>Doanh thu của bạn</li>
+                </NavLink>
+                <NavLink
+                  to="productOrder"
+                  className={({ isActive }) =>
+                    isActive
+                      ? "font-bold block my-3 cursor-pointer"
+                      : "my-3 block opacity-80 cursor-pointer"
+                  }
+                >
+                  <li>Đơn hàng</li>
+                </NavLink>
+              </ul>
+            </li>
           </ul>
         </section>
 
@@ -281,6 +353,7 @@ function Account() {
 
             <Route path="manageMyorder" element={<ManageMyOrder />} />
             <Route path="productOrder" element={<ProductOrder />} />
+            <Route path="myrevenue" element={<MyRevenue />} />
             <Route path="*" element={<Profile user={user} />} />
           </Routes>
         </section>

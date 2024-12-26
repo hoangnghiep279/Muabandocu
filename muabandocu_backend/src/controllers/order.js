@@ -321,7 +321,7 @@ async function createOrder(
       [orderItems]
     );
 
-    if (productIdsToUpdate.length > 0) {
+    if (productIdsToUpdate.length > 0 && !orders.payment_method === "momo") {
       await db.query("UPDATE product SET approved = 2 WHERE id IN (?)", [
         productIdsToUpdate,
       ]);
@@ -367,10 +367,57 @@ async function createOrder(
   }
 }
 
+// huy don
+const cancelOrder = async (orderId) => {
+  try {
+    // Kiểm tra xem đơn hàng có tồn tại không
+    const [orderCheck] = await db.execute(
+      "SELECT * FROM `order` WHERE id = ?",
+      [orderId]
+    );
+
+    if (orderCheck.length === 0) {
+      throw new Error("Đơn hàng không tồn tại");
+    }
+
+    const orderRecord = orderCheck[0];
+
+    // Kiểm tra xem trạng thái đơn hàng có phải là "chờ xử lý" hoặc "chờ giao hàng" hay không
+    if (orderRecord.status !== 0 && orderRecord.status !== -1) {
+      throw new Error("Không thể hủy đơn hàng đã xử lý hoặc giao hàng");
+    }
+
+    // Xóa các sản phẩm trong đơn hàng
+    await db.execute("DELETE FROM `order_items` WHERE order_id = ?", [orderId]);
+
+    // Cập nhật lại trạng thái sản phẩm về "sẵn sàng bán" (ví dụ: approved = 1)
+    const [orderItems] = await db.execute(
+      "SELECT product_id FROM `order_items` WHERE order_id = ?",
+      [orderId]
+    );
+
+    const productIdsToUpdate = orderItems.map((item) => item.product_id);
+
+    if (productIdsToUpdate.length > 0) {
+      await db.query("UPDATE product SET approved = 1 WHERE id IN (?)", [
+        productIdsToUpdate,
+      ]);
+    }
+
+    // Xóa đơn hàng
+    await db.execute("DELETE FROM `order` WHERE id = ?", [orderId]);
+
+    return { success: true, message: "Đơn hàng đã được hủy thành công" };
+  } catch (error) {
+    throw new Error(`Lỗi hủy đơn hàng: ${error.message}`);
+  }
+};
+
 module.exports = {
   createOrder,
   getProductsByOrderStatus,
   getProcessedOrders,
   getPendingOrders,
   approveOrderItem,
+  cancelOrder,
 };
