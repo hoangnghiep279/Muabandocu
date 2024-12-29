@@ -118,6 +118,33 @@ const updatePayAdminStatus = async (orderItemId) => {
     throw error;
   }
 };
+const updatePaySellerStatus = async (orderItemId) => {
+  try {
+    const [rows] = await db.execute("SELECT * FROM order_items WHERE id = ?", [
+      orderItemId,
+    ]);
+
+    if (rows.length === 0) {
+      console.error("Không tìm thấy orderItemId:", orderItemId); // Ghi log lỗi
+      return {
+        code: 400,
+        message: "Không có sản phẩm trong đơn hàng.",
+      };
+    }
+
+    await db.execute("UPDATE order_items SET pay_seller = 1 WHERE id = ?", [
+      orderItemId,
+    ]);
+
+    return {
+      code: 200,
+      message: "Thanh toán thành công",
+    };
+  } catch (error) {
+    console.error("Lỗi trong updatePayAdminStatus:", error);
+    throw error;
+  }
+};
 
 const getProductOrderWithMoMo = async () => {
   try {
@@ -128,11 +155,15 @@ const getProductOrderWithMoMo = async () => {
           MIN(i.img_url) AS product_image, -- Lấy ảnh đầu tiên (hoặc ảnh nhỏ nhất theo thứ tự)
           oi.price AS product_price,
           o.shipfee AS shipping_fee,
-          o.totalprice AS total_price
+          o.totalprice AS total_price,
+          u.name AS user_name, -- Thêm tên người dùng
+          u.momo_account AS momo_account 
       FROM 
           order_items oi
       JOIN 
           \`order\` o ON oi.order_id = o.id
+      JOIN 
+          user u ON o.user_id = u.id -- Kết nối với bảng users để lấy tên người dùng
       JOIN 
           product p ON oi.product_id = p.id
       LEFT JOIN 
@@ -142,10 +173,8 @@ const getProductOrderWithMoMo = async () => {
           AND o.payment_method = 'momo' 
           AND oi.pay_seller = 0
       GROUP BY 
-          oi.id, p.title, oi.price, o.shipfee, o.totalprice;
+          oi.id, p.title, oi.price, o.shipfee, o.totalprice, u.name, u.momo_account;
     `);
-
-    console.log("Rows returned:", rows);
 
     return {
       code: 200,
@@ -161,11 +190,13 @@ const getPaymentWithCod = async () => {
     const [rows] = await db.execute(`
       SELECT 
           oi.id AS order_item_id,
+          p.id AS product_id,
           p.title AS product_name,
           u.name AS seller_name,
           u.avatar AS seller_avatar,
           oi.price AS product_price,
-          o.shipfee AS shipping_fee
+          o.shipfee AS shipping_fee,
+          oi.pay_admin AS pay_admin
       FROM 
           order_items oi
       JOIN 
@@ -175,7 +206,9 @@ const getPaymentWithCod = async () => {
       JOIN 
           user u ON oi.seller_id = u.id
       WHERE 
-          oi.delivery_status = 3 AND o.payment_method = 'cod' AND oi.pay_admin = 1;
+          oi.delivery_status = 3 
+          AND o.payment_method = 'cod' 
+          AND oi.pay_admin IN (0, 1); -- Điều kiện lấy cả giá trị 0 và 1
     `);
 
     return {
@@ -194,4 +227,5 @@ module.exports = {
   getProductOrderWithMoMo,
   getPaymentWithCod,
   updatePayAdminStatus,
+  updatePaySellerStatus,
 };

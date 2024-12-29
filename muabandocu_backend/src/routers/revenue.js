@@ -3,7 +3,10 @@ const router = express.Router();
 const controller = require("../controllers/revenue");
 const { checkLogin } = require("../middleware/checkLogin");
 const { checkAdmin } = require("../middleware/checkPermission");
-const { payAdminProductCod } = require("../middleware/paymentMomo");
+const {
+  payAdminProductCod,
+  paySellerProductMomo,
+} = require("../middleware/paymentMomo");
 // lấy doanh thu
 router.get("/", checkLogin, async (req, res, next) => {
   try {
@@ -64,6 +67,7 @@ router.get("/order-items-cod", async (req, res, next) => {
   }
 });
 
+// ================================================phần thanh toán trong doanh thu ================================================
 // kiểm tra đơn hàng thanh toán khi nhận hàng
 router.post("/momo-payment", payAdminProductCod, async (req, res) => {
   console.log(req.body);
@@ -95,6 +99,41 @@ router.post("/pay-admin", async (req, res, next) => {
     }
 
     const result = await controller.updatePayAdminStatus(orderItemId);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// kiểm tra đơn hàng thanh toán với momoo
+router.post("/momo-payment-seller", paySellerProductMomo, async (req, res) => {
+  console.log(req.body);
+  const { orderIdFromMoMo, paymentUrl, orderItemId } = req;
+
+  if (paymentUrl) {
+    return res.status(200).json({
+      orderItemId: orderItemId,
+      message: "Tạo giao dịch MoMo thành công.",
+      payUrl: paymentUrl,
+      orderId: orderIdFromMoMo,
+    });
+  }
+
+  return res.status(500).json({ message: "Không thể xử lý giao dịch MoMo." });
+});
+
+// Endpoint cập nhật trạng thái thanh toán pay_seller
+router.post("/pay-seller", async (req, res, next) => {
+  try {
+    const { extraData } = req.body;
+    const parsedExtraData = JSON.parse(extraData);
+    const { orderItemId } = parsedExtraData;
+
+    if (!orderItemId) {
+      return res.status(400).json({ message: "Thiếu orderItemId." });
+    }
+
+    const result = await controller.updatePaySellerStatus(orderItemId);
     res.status(200).json(result);
   } catch (error) {
     next(error);

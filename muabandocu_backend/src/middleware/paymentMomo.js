@@ -165,4 +165,84 @@ const payAdminProductCod = async (req, res, next) => {
   }
 };
 
-module.exports = { processPaymentMoMo, payAdminProductCod };
+const paySellerProductMomo = async (req, res, next) => {
+  const {
+    totalprice: amount,
+    payment_method: paymentMethod,
+    momoAccount,
+    redirectUrl,
+    orderItemId,
+  } = req.body;
+
+  console.log("orderItemId trong middleware:", orderItemId);
+  if (paymentMethod !== "momo") {
+    return next();
+  }
+
+  const accessKey = "F8BBA842ECF85";
+  const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+  const partnerCode = "MOMO";
+
+  try {
+    const ngrokUrl = await getNgrokUrl();
+    if (!ngrokUrl) {
+      return res.status(500).json({ message: "Không thể kết nối với ngrok." });
+    }
+
+    const ipnUrl = `${ngrokUrl}/revenue/pay-seller`;
+    const orderInfo = "pay with MoMo";
+    const orderId = partnerCode + new Date().getTime();
+    const requestId = orderId;
+    const extraData = JSON.stringify({
+      momoAccount,
+      orderItemId: orderItemId,
+    });
+
+    const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=payWithMethod`;
+
+    const signature = crypto
+      .createHmac("sha256", secretKey)
+      .update(rawSignature)
+      .digest("hex");
+
+    const requestBody = {
+      partnerCode,
+      partnerName: "Test",
+      storeId: "MomoTestStore",
+      requestId,
+      amount,
+      orderId,
+      orderInfo,
+      redirectUrl,
+      ipnUrl,
+      lang: "vi",
+      requestType: "payWithMethod",
+      autoCapture: true,
+      extraData,
+      signature,
+    };
+
+    const response = await axios.post(
+      "https://test-payment.momo.vn/v2/gateway/api/create",
+      requestBody
+    );
+    console.log("MoMo response:", response.data);
+    if (response.data.payUrl) {
+      req.paymentUrl = response.data.payUrl;
+      req.orderIdFromMoMo = orderId;
+      req.orderItemId = orderItemId;
+      return next();
+    } else {
+      return res.status(500).json({ message: "Không thể tạo giao dịch MoMo." });
+    }
+  } catch (error) {
+    console.error("Thanh toán MoMo thất bại:", error.message);
+    return res.status(500).json({ message: "Thanh toán MoMo thất bại." });
+  }
+};
+
+module.exports = {
+  processPaymentMoMo,
+  payAdminProductCod,
+  paySellerProductMomo,
+};
