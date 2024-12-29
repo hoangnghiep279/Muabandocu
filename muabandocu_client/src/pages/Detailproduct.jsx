@@ -15,6 +15,8 @@ const ProductDetail = () => {
   const [isSeeMore, setIsSeeMore] = useState(false);
   const navigate = useNavigate();
 
+  console.log(product);
+
   const handleBuyNow = () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -68,11 +70,6 @@ const ProductDetail = () => {
     }
 
     const result = await addCartItem(product);
-    // if (result.success) {
-    //   alert(result.message);
-    // } else {
-    //   alert(result.message);
-    // }
   };
 
   if (loading) return <Loading />;
@@ -121,6 +118,14 @@ const ProductDetail = () => {
               <span className="border-t border-b px-3">{quantity}</span>
             </p>
           </div>
+          <p>
+            <span className="text-light block opacity-70">
+              Phí ship: {product.shipfee}
+            </span>
+            <span className="text-light block opacity-70">
+              Bảo hành: {product.warranty}
+            </span>
+          </p>
 
           <Link
             to={{

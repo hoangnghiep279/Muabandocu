@@ -58,7 +58,7 @@ function Account() {
       path.includes("productOrder")
     ) {
       setOpenMenu("manageMyorder");
-    } else if (path.includes("myrevenue") || path.includes("productOrder")) {
+    } else if (path.includes("myrevenue")) {
       setOpenMenu("myrevenue");
     } else {
       setOpenMenu(null);
@@ -315,23 +315,13 @@ function Account() {
                 >
                   <li>Doanh thu của bạn</li>
                 </NavLink>
-                <NavLink
-                  to="productOrder"
-                  className={({ isActive }) =>
-                    isActive
-                      ? "font-bold block my-3 cursor-pointer"
-                      : "my-3 block opacity-80 cursor-pointer"
-                  }
-                >
-                  <li>Đơn hàng</li>
-                </NavLink>
               </ul>
             </li>
           </ul>
         </section>
 
         {/* Main Content */}
-        <section className="w-4/5 box-shadow px-6 pb-8">
+        <section className="w-4/5 box-shadow px-6 pb-8 h-[600px] overflow-auto">
           <Routes>
             <Route path="profile" element={<Profile user={user} />} />
             <Route

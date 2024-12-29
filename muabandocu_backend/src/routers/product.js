@@ -138,7 +138,6 @@ router.post("/", checkLogin, upload.array("images"), async (req, res, next) => {
     next(error);
   }
 });
-// check liên kết momo
 
 // sửa
 router.put(

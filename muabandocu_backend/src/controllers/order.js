@@ -180,9 +180,9 @@ const getProcessedOrders = async (sellerId) => {
           address a ON o.address_id = a.id
       WHERE 
           oi.seller_id = ? 
-          AND oi.delivery_status IN (2, 3) -- Điều kiện delivery_status bằng 2 hoặc 3
+          AND oi.delivery_status IN (2, 3) 
       GROUP BY 
-          oi.id; -- Nhóm theo từng mục đơn hàng
+          oi.id; 
     `;
     const [processedOrders] = await db.query(query, [sellerId]);
 
@@ -216,13 +216,15 @@ const approveOrderItem = async (orderItemId, newStatus) => {
     const [result] = await db.query(
       `
       UPDATE order_items 
-      SET delivery_status = ? 
+      SET delivery_status = ?,
+      pay_admin = ?,
+      pay_seller = ?
       WHERE id = ?;
       `,
-      [newStatus, orderItemId]
+      [newStatus, 0, 0, orderItemId]
     );
 
-    return result.affectedRows > 0; // Trả về true nếu cập nhật thành công
+    return result.affectedRows > 0;
   } catch (error) {
     throw error;
   }
@@ -321,10 +323,18 @@ async function createOrder(
       [orderItems]
     );
 
-    if (productIdsToUpdate.length > 0 && !orders.payment_method === "momo") {
-      await db.query("UPDATE product SET approved = 2 WHERE id IN (?)", [
-        productIdsToUpdate,
-      ]);
+    if (productIdsToUpdate.length > 0) {
+      if (orders.payment_method === "momo") {
+        // Chờ thanh toán thành công từ MoMo mới update trạng thái approved
+        console.log(
+          "Đơn hàng qua MoMo, chờ thanh toán để cập nhật trạng thái sản phẩm."
+        );
+      } else {
+        // Cập nhật trực tiếp với phương thức thanh toán khác
+        await db.query("UPDATE product SET approved = 2 WHERE id IN (?)", [
+          productIdsToUpdate,
+        ]);
+      }
     }
 
     for (const sellerId in sellerProducts) {

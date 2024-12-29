@@ -7,6 +7,7 @@ const cartitem = require("./routers/cartitem");
 const address = require("./routers/address");
 const order = require("./routers/order");
 const notification = require("./routers/notification");
+const revenue = require("./routers/revenue");
 const path = require("path");
 const app = express();
 
@@ -33,5 +34,6 @@ app.use("/cartitem", cartitem);
 app.use("/address", address);
 app.use("/order", order);
 app.use("/notification", notification);
+app.use("/revenue", revenue);
 
 module.exports = app;

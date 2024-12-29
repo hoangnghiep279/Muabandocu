@@ -14,6 +14,7 @@ import EditCategory from "./admin/pages/categoriespage/EditCategory";
 import ManagerAccount from "./admin/pages/managerpage/ManagerAccount";
 import AddManager from "./admin/pages/managerpage/AddManager";
 import UserAccount from "./admin/pages/UserAccount";
+import RevenueAdmin from "./admin/pages/RevenueAdmin";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -47,7 +48,7 @@ const App = () => {
 
       {isAuthenticated && permission === "1" && (
         <Route path="/admin" element={<LayoutAdmin />}>
-          <Route index element={<AdminDashboard />} />
+          <Route index element={<RevenueAdmin />} />
           <Route path="product/:id" element={<AdminProductDetail />} />
           <Route path="/admin/category" element={<Category />} />
           <Route path="/admin/category/add" element={<AddCate />} />
@@ -55,6 +56,7 @@ const App = () => {
           <Route path="/admin/managerAccount" element={<ManagerAccount />} />
           <Route path="/admin/managerAccount/add" element={<AddManager />} />
           <Route path="/admin/userAccount" element={<UserAccount />} />
+          <Route path="/admin/product" element={<AdminDashboard />} />
         </Route>
       )}
 

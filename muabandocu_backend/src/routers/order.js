@@ -19,7 +19,6 @@ router.get("/pending-orders", checkLogin, async (req, res, next) => {
 router.post("/approve", checkLogin, async (req, res, next) => {
   try {
     const { orderItemId, newStatus } = req.body;
-    console.log(req.body);
 
     if (!orderItemId || typeof newStatus !== "number") {
       return res.status(400).json({
@@ -44,6 +43,8 @@ router.post("/approve", checkLogin, async (req, res, next) => {
     next(error);
   }
 });
+
+// hiện sản phẩm đang và đã vận chuyển
 router.get("/product-orders", checkLogin, async (req, res, next) => {
   try {
     const result = await controller.getProcessedOrders(req.payload.id);
@@ -101,64 +102,10 @@ router.post("/", checkLogin, processPaymentMoMo, async (req, res, next) => {
     next(error);
   }
 });
-// router.post("/momo-ipn", async (req, res, next) => {
-//   try {
-//     const { orderId, resultCode } = req.body;
-//     console.log(req.body);
 
-//     if (!orderId) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "orderId is missing" });
-//     }
-
-//     // Kiểm tra xem orderId có tồn tại trong cơ sở dữ liệu không
-//     const [orderCheck] = await db.execute(
-//       "SELECT * FROM `order` WHERE momo_order_id = ?",
-//       [orderId]
-//     );
-
-//     if (orderCheck.length === 0) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Invalid orderId" });
-//     }
-
-//     const orderRecord = orderCheck[0];
-
-//     if (resultCode === "0" || resultCode === 0) {
-//       // Thành công
-//       await db.execute(
-//         "UPDATE `order` SET status = 1 WHERE momo_order_id = ?",
-//         [orderId]
-//       );
-//       await db.execute(
-//         "UPDATE `order_items` SET delivery_status = 1 WHERE order_id = ?",
-//         [orderRecord.id]
-//       );
-//       res.status(200).json({ success: true, message: "Thanh toán thành công" });
-//     } else {
-//       await db.execute(
-//         "UPDATE `order` SET status = 9 WHERE momo_order_id = ?",
-//         [orderId]
-//       );
-//       await db.execute(
-//         "UPDATE `order_items` SET delivery_status = 9 WHERE order_id = ?",
-//         [orderRecord.id]
-//       );
-//       res
-//         .status(200)
-//         .json({ success: true, message: "Thanh toán không thành công" });
-//     }
-//   } catch (error) {
-//     console.error("Lỗi xử lý IPN MoMo:", error.message);
-//     next(error);
-//   }
-// });
 router.post("/momo-ipn", async (req, res, next) => {
   try {
     const { orderId, resultCode } = req.body;
-    console.log(req.body);
 
     if (!orderId) {
       return res

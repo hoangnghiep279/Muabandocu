@@ -19,7 +19,17 @@ function Navbar() {
               : "hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
           }
         >
-          Sản phẩm đã duyệt
+          <li> Doanh thu</li>
+        </NavLink>
+        <NavLink
+          to="/admin/product"
+          className={({ isActive }) =>
+            isActive
+              ? "font-bold hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
+              : "hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
+          }
+        >
+          <li> Sản phẩm đã duyệt</li>
         </NavLink>
         <NavLink
           to="/admin/category"
@@ -29,7 +39,7 @@ function Navbar() {
               : "hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
           }
         >
-          Quản lý loại sản phẩm
+          <li> Quản lý loại sản phẩm</li>
         </NavLink>
         <NavLink
           to="/admin/managerAccount"
@@ -39,7 +49,7 @@ function Navbar() {
               : "hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
           }
         >
-          Quản lý manager
+          <li> Quản lý manager</li>
         </NavLink>
         <NavLink
           to="/admin/userAccount"
@@ -49,14 +59,14 @@ function Navbar() {
               : "hover:bg-gray-300 hover:text-gray-900 py-2 rounded-lg"
           }
         >
-          Quản lý người dùng
+          <li> Quản lý người dùng</li>
         </NavLink>
         <NavLink
           to="/login"
           className={({ isActive }) => (isActive ? "font-bold" : "")}
           onClick={handleLogout}
         >
-          Đăng xuất
+          <li> Đăng xuất</li>
         </NavLink>
       </ul>
     </nav>
