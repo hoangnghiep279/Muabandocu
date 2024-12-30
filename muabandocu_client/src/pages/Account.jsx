@@ -27,6 +27,7 @@ import RecievedOrder from "../components/RecievedOrder";
 import ManageMyOrder from "../components/ManageMyOrder";
 import ProductOrder from "../components/ProductOrder";
 import MyRevenue from "../components/MyRevenue";
+import MyRevenueMomo from "../components/MyRevenueMomo";
 
 function Account() {
   const [user, setUser] = useState(null);
@@ -58,7 +59,7 @@ function Account() {
       path.includes("productOrder")
     ) {
       setOpenMenu("manageMyorder");
-    } else if (path.includes("myrevenue")) {
+    } else if (path.includes("myrevenue") || path.includes("myrevenuemomo")) {
       setOpenMenu("myrevenue");
     } else {
       setOpenMenu(null);
@@ -315,6 +316,16 @@ function Account() {
                 >
                   <li>Doanh thu của bạn</li>
                 </NavLink>
+                <NavLink
+                  to="myrevenuemomo"
+                  className={({ isActive }) =>
+                    isActive
+                      ? "font-bold block my-3 cursor-pointer"
+                      : "my-3 block opacity-80 cursor-pointer"
+                  }
+                >
+                  <li>Các sản phẩm thanh toán Momo</li>
+                </NavLink>
               </ul>
             </li>
           </ul>
@@ -344,6 +355,7 @@ function Account() {
             <Route path="manageMyorder" element={<ManageMyOrder />} />
             <Route path="productOrder" element={<ProductOrder />} />
             <Route path="myrevenue" element={<MyRevenue />} />
+            <Route path="myrevenuemomo" element={<MyRevenueMomo />} />
             <Route path="*" element={<Profile user={user} />} />
           </Routes>
         </section>

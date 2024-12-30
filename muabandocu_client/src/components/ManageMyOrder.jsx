@@ -108,6 +108,14 @@ function ManageMyOrder() {
               </div>
               <div className="flex flex-col gap-4">
                 <p className="text-sm text-gray-600">
+                  <span> Phương thức thanh toán: </span>
+                  <span className="block font-semibold text-primaryColor">
+                    {order.payment_method === "cod"
+                      ? "Thanh toán khi nhận hàng"
+                      : "Thanh toán online"}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600">
                   Ngày đặt hàng:{" "}
                   {new Date(order.created_at).toLocaleDateString("vi-VN")}
                 </p>

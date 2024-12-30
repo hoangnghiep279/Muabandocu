@@ -32,7 +32,7 @@ const getOrdersWithCod = async (sellerId, page = 1, limit = 10) => {
         p.title AS product_name,
         u.name AS buyer_name,
         oi.price AS product_price,
-        o.shipfee AS shipping_fee,
+        p.shipfee AS shipping_fee,
         i.img_url AS product_image
       FROM order_items AS oi
       JOIN \`order\` AS o ON oi.order_id = o.id
@@ -219,10 +219,46 @@ const getPaymentWithCod = async () => {
     throw new Error("Lỗi truy vấn dữ liệu: " + error.message);
   }
 };
+const getPaymentWithMomo = async (userId) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT 
+          oi.id AS order_item_id,
+          p.id AS product_id,
+          p.title AS product_name,
+          u.name AS seller_name,
+          u.avatar AS seller_avatar,
+          oi.price AS product_price,
+          o.shipfee AS shipping_fee,
+          oi.pay_seller AS pay_seller
+      FROM 
+          order_items oi
+      JOIN 
+          \`order\` o ON oi.order_id = o.id
+      JOIN 
+          product p ON oi.product_id = p.id
+      JOIN 
+          user u ON oi.seller_id = u.id
+      WHERE 
+          oi.delivery_status = 3 
+          AND o.payment_method = 'momo' 
+          AND oi.pay_seller IN (0, 1)
+         AND oi.seller_id = '${userId}';
+    `);
+
+    return {
+      code: 200,
+      data: rows,
+    };
+  } catch (error) {
+    throw new Error("Lỗi truy vấn dữ liệu: " + error.message);
+  }
+};
 
 module.exports = {
   getRevenueSeller,
   getOrdersWithCod,
+  getPaymentWithMomo,
   revenueAdmin,
   getProductOrderWithMoMo,
   getPaymentWithCod,

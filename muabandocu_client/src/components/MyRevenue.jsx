@@ -63,7 +63,6 @@ function MyRevenue() {
     fetchProductPaymentCod();
   }, [page]);
 
-  console.log(productPaymentCod);
   // tính tống doanh thu
   const calculateTotalRevenue = (percent) => {
     const total = revenueData?.reduce(
@@ -71,17 +70,6 @@ function MyRevenue() {
       0
     );
     return total ? total * percent : 0;
-  };
-
-  //tính tiền phải trả admin
-  const calculateTotalWithCommission = () => {
-    return (
-      productPaymentCod?.reduce((total, item) => {
-        const price = parseFloat(item.product_price) || 0;
-        const shipping = parseFloat(item.shipping_fee) || 0;
-        return total + (price + shipping) * 0.05;
-      }, 0) || 0
-    );
   };
 
   const handlePayment = async (orderItemId, amount) => {
@@ -226,7 +214,7 @@ function MyRevenue() {
                         {parseInt(item.product_price).toLocaleString("vi-VN")}đ
                       </td>
                       <td className="border border-gray-400 px-4 py-2">
-                        {parseInt(item.shipping_fee).toLocaleString("vi-VN")}đ
+                        {item.shipping_fee}đ
                       </td>
                       <td className="border border-gray-400 px-4 py-2">
                         <img
@@ -236,25 +224,25 @@ function MyRevenue() {
                         />
                       </td>
                       <td className="border border-gray-400 px-4 py-2">
-                        {calculateTotalWithCommission().toLocaleString("vi-VN")}
+                        {(Number(item.product_price) +
+                          Number(item.shipping_fee)) *
+                          0.05}
                         đ
                       </td>
                       <td className="text-center">
-                        <td className="text-center">
-                          <button
-                            className="py-2 px-4 text-white bg-primaryColor"
-                            onClick={() =>
-                              handlePayment(
-                                item.order_item_id,
-                                (Number(item.product_price) +
-                                  Number(item.shipping_fee)) *
-                                  0.05
-                              )
-                            }
-                          >
-                            Thanh toán
-                          </button>
-                        </td>
+                        <button
+                          className="py-2 px-4 text-white bg-primaryColor"
+                          onClick={() =>
+                            handlePayment(
+                              item.order_item_id,
+                              (Number(item.product_price) +
+                                Number(item.shipping_fee)) *
+                                0.05
+                            )
+                          }
+                        >
+                          Thanh toán
+                        </button>
                       </td>
                     </tr>
                   ))}

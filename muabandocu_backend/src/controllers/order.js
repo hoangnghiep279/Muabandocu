@@ -117,6 +117,7 @@ const getPendingOrders = async (sellerId) => {
           p.shipfee AS shipping_fee,
           MIN(i.img_url) AS product_image, 
           o.address_id,
+          o.payment_method,
           o.created_at,
           a.name AS customer_name,
           a.phone AS customer_phone,

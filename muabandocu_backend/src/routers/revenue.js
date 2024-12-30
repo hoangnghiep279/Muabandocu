@@ -66,6 +66,14 @@ router.get("/order-items-cod", async (req, res, next) => {
     next(error); // Chuyển lỗi sang middleware xử lý lỗi
   }
 });
+router.get("/order-items-momo", checkLogin, async (req, res, next) => {
+  try {
+    const result = await controller.getPaymentWithMomo(req.payload.id);
+    res.status(result.code).json(result);
+  } catch (error) {
+    next(error); // Chuyển lỗi sang middleware xử lý lỗi
+  }
+});
 
 // ================================================phần thanh toán trong doanh thu ================================================
 // kiểm tra đơn hàng thanh toán khi nhận hàng

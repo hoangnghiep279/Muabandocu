@@ -27,7 +27,7 @@ function UserAccount() {
             <th className="px-4 py-2 border">Ảnh đại diện</th>
             <th className="px-4 py-2 border">Giới tính</th>
             <th className="px-4 py-2 border">Ngày tạo</th>
-            <th className="px-4 py-2 border">Xóa loại sản phẩm</th>
+            <th className="px-4 py-2 border">Xóa người dùng</th>
           </tr>
         </thead>
         <tbody>

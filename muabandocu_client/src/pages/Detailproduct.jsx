@@ -118,13 +118,9 @@ const ProductDetail = () => {
               <span className="border-t border-b px-3">{quantity}</span>
             </p>
           </div>
-          <p>
-            <span className="text-light block opacity-70">
-              Phí ship: {product.shipfee}
-            </span>
-            <span className="text-light block opacity-70">
-              Bảo hành: {product.warranty}
-            </span>
+          <p className="text-lg font-medium italic">
+            <span className="block">Phí ship: {product.shipfee}</span>
+            <span className="block">Bảo hành: {product.warranty}</span>
           </p>
 
           <Link

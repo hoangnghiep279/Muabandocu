@@ -222,13 +222,26 @@ function RevenueAdmin() {
                       {item.momo_account}
                     </td>
                     <td className="border border-gray-300 p-2 text-center">
-                      {parseFloat(item.total_price).toLocaleString()} VND
+                      {parseFloat(
+                        Number(item.product_price) + Number(item.shipping_fee)
+                      ).toLocaleString()}{" "}
+                      VND
                     </td>
                     <td className="border border-gray-300 p-2 text-center">
-                      {parseFloat(item.total_price * 0.05).toLocaleString()} VND
+                      {parseFloat(
+                        (Number(item.product_price) +
+                          Number(item.shipping_fee)) *
+                          0.05
+                      ).toLocaleString()}{" "}
+                      VND
                     </td>
                     <td className="border border-gray-300 p-2 text-center">
-                      {parseFloat(item.total_price * 0.95).toLocaleString()} VND
+                      {parseFloat(
+                        (Number(item.product_price) +
+                          Number(item.shipping_fee)) *
+                          0.95
+                      ).toLocaleString()}{" "}
+                      VND
                     </td>
                     <td className="border border-gray-300 p-2 text-center">
                       <button
@@ -236,7 +249,11 @@ function RevenueAdmin() {
                         onClick={() =>
                           handlePayment(
                             item.order_item_id,
-                            parseFloat(item.total_price * 0.95)
+                            parseFloat(
+                              (Number(item.product_price) +
+                                Number(item.shipping_fee)) *
+                                0.95
+                            )
                           )
                         }
                       >
