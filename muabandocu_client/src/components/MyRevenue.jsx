@@ -2,15 +2,18 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { IoArrowForwardOutline, IoArrowBackSharp } from "react-icons/io5";
 import Loading from "./Loading";
+
 function MyRevenue() {
-  const [revenueData, setRevenueData] = useState(null);
-  const [productPaymentCod, setProductPaymentCod] = useState(null);
+  const [revenueData, setRevenueData] = useState([]);
+  const [productPaymentCod, setProductPaymentCod] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const token = localStorage.getItem("token");
   const BASE_URL = "http://localhost:3000/";
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
 
   // Phân trang
   const handlePageChange = (event) => {
@@ -18,29 +21,29 @@ function MyRevenue() {
     setPage(selectedPage);
   };
 
-  // Thống kê tổng doanh thu
-  useEffect(() => {
-    const fetchRevenueData = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/revenue", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setRevenueData(response.data);
-      } catch (err) {
-        setError("Không thể tải dữ liệu doanh thu.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchRevenueData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${BASE_URL}revenue`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { month: selectedMonth, year: selectedYear },
+      });
+      setRevenueData(response.data || []);
+    } catch (err) {
+      setError("Không thể tải dữ liệu doanh thu.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchRevenueData();
-  }, []);
+  }, [selectedMonth, selectedYear]);
 
   // Product Payment Cod
   useEffect(() => {
     const fetchProductPaymentCod = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `http://localhost:3000/revenue/payment_cod?page=${page}&limit=5`,
@@ -51,8 +54,8 @@ function MyRevenue() {
           }
         );
 
-        setProductPaymentCod(response.data.data);
-        setTotalPages(response.data.data.pages || 1);
+        setProductPaymentCod(response.data.data || []);
+        setTotalPages(response.data.totalPages || 1);
       } catch (err) {
         setError("Không thể tải dữ liệu doanh thu.");
       } finally {
@@ -62,11 +65,12 @@ function MyRevenue() {
 
     fetchProductPaymentCod();
   }, [page]);
+  console.log(productPaymentCod);
 
-  // tính tống doanh thu
+  // Tính tổng doanh thu
   const calculateTotalRevenue = (percent) => {
-    const total = revenueData?.reduce(
-      (total, item) => total + parseInt(item.price) * item.quantity,
+    const total = revenueData.reduce(
+      (total, item) => total + parseInt(item.totalRevenue),
       0
     );
     return total ? total * percent : 0;
@@ -116,11 +120,57 @@ function MyRevenue() {
       </div>
     );
   if (error) return <div>{error}</div>;
+  console.log(revenueData);
 
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold">Doanh Thu Của Bạn</h1>
-      {revenueData?.length > 0 ? (
+      <div className="flex items-center gap-4">
+        <div>
+          <label
+            htmlFor="month"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Tháng:
+          </label>
+          <select
+            id="month"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="">Tất cả</option>
+            {Array.from({ length: 12 }, (_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {i + 1}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label
+            htmlFor="year"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Năm:
+          </label>
+          <input
+            type="number"
+            id="year"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+            placeholder="VD: 2023"
+          />
+        </div>
+        <button
+          onClick={fetchRevenueData}
+          className="mt-6 px-4 py-2 bg-primaryColor text-white rounded-md"
+        >
+          Lọc
+        </button>
+      </div>
+      {revenueData.length > 0 ? (
         <div className="flex gap-4 flex-col">
           <div className="flex items-center justify-between flex-wrap">
             <div>
@@ -140,7 +190,7 @@ function MyRevenue() {
             <div>
               <h3 className="text-lg font-medium mb-2">Số lượng đã bán:</h3>
               <span className="w-44 h-14 text-xl font-medium bg-primaryColor flex-center text-white block">
-                {revenueData.length}
+                {revenueData.reduce((total, item) => item.totalQuantity, 0)}
               </span>
             </div>
           </div>
@@ -149,7 +199,7 @@ function MyRevenue() {
             <h3 className="text-lg font-semibold">
               Danh sách sản phẩm cần thanh toán hoa hồng cho admin
             </h3>
-            {productPaymentCod && productPaymentCod.length > 0 ? (
+            {productPaymentCod.length > 0 ? (
               <div className="flex justify-end mb-3 gap-1 items-center">
                 <button
                   disabled={page <= 1}
@@ -178,7 +228,7 @@ function MyRevenue() {
             ) : (
               <p></p>
             )}
-            {productPaymentCod && productPaymentCod.length > 0 ? (
+            {productPaymentCod.length > 0 ? (
               <table className="table-auto border-collapse border border-gray-400 w-full mt-4">
                 <thead>
                   <tr>
@@ -224,9 +274,11 @@ function MyRevenue() {
                         />
                       </td>
                       <td className="border border-gray-400 px-4 py-2">
-                        {(Number(item.product_price) +
-                          Number(item.shipping_fee)) *
-                          0.05}
+                        {(
+                          (Number(item.product_price) +
+                            Number(item.shipping_fee)) *
+                          0.05
+                        ).toLocaleString("vi-VN")}
                         đ
                       </td>
                       <td className="text-center">

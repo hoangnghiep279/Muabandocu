@@ -10,6 +10,11 @@
   max-width: calc(100% - 48px);
   margin: 0 auto;
 }
+.container-field {
+  width: 1300x;
+  max-width: calc(100% - 48px);
+  margin: 0 auto;
+}
 
 .flex-center {
   display: flex;

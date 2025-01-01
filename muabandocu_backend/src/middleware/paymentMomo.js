@@ -98,7 +98,6 @@ const payAdminProductCod = async (req, res, next) => {
     orderItemId,
   } = req.body;
 
-  console.log("orderItemId trong middleware:", orderItemId);
   if (paymentMethod !== "momo") {
     return next(); // Nếu không phải MoMo, tiếp tục xử lý các middleware khác
   }
@@ -150,7 +149,6 @@ const payAdminProductCod = async (req, res, next) => {
       "https://test-payment.momo.vn/v2/gateway/api/create",
       requestBody
     );
-    console.log("MoMo response:", response.data);
     if (response.data.payUrl) {
       req.paymentUrl = response.data.payUrl;
       req.orderIdFromMoMo = orderId;

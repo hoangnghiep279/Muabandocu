@@ -1,22 +1,63 @@
 const db = require("../config/database");
 
-const getRevenueSeller = async (sellerId) => {
+const getRevenueSellerByTime = async (sellerId, month, year) => {
   try {
-    const [orderItems] = await db.execute(
-      "SELECT `id`, `order_id`, `seller_id`, `product_id`, `quantity`, `price`, `delivery_status`, `pay_admin`, `pay_seller` " +
-        "FROM `order_items` " +
-        "WHERE `seller_id` = ? AND `delivery_status` = 3",
-      [sellerId]
-    );
+    const query = `
+      SELECT 
+        MONTH(created_at) AS month, 
+        YEAR(created_at) AS year, 
+        SUM(quantity * price) AS totalRevenue, 
+        SUM(quantity) AS totalQuantity 
+      FROM order_items 
+      WHERE seller_id = ? AND delivery_status = 3
+      ${month ? "AND MONTH(created_at) = ?" : ""}
+      ${year ? "AND YEAR(created_at) = ?" : ""}
+      GROUP BY month, year
+      ORDER BY year DESC, month DESC
+    `;
 
-    if (orderItems.length === 0) {
-      return {
-        totalRevenue: 0,
-        totalQuantity: 0,
-      };
-    }
-    return orderItems;
+    const params = [sellerId];
+    if (month) params.push(month);
+    if (year) params.push(year);
+
+    const [rows] = await db.execute(query, params);
+
+    return rows.length > 0 ? rows : [];
   } catch (error) {
+    throw error;
+  }
+};
+const getRevenueAdminByTime = async (month, year) => {
+  try {
+    const params = []; // Khởi tạo mảng params
+    let query = `
+      SELECT 
+        MONTH(created_at) AS month, 
+        YEAR(created_at) AS year, 
+        SUM(quantity * price) AS totalRevenue, 
+        SUM(quantity) AS totalQuantity 
+      FROM order_items 
+      WHERE delivery_status = 3
+    `;
+
+    // Thêm điều kiện động
+    if (month) {
+      query += " AND MONTH(created_at) = ?";
+      params.push(month);
+    }
+    if (year) {
+      query += " AND YEAR(created_at) = ?";
+      params.push(year);
+    }
+
+    query += " GROUP BY month, year ORDER BY year DESC, month DESC";
+
+    // Thực thi truy vấn
+    const [rows] = await db.execute(query, params);
+
+    return rows.length > 0 ? rows : [];
+  } catch (error) {
+    console.error("Error in getRevenueAdminByTime:", error);
     throw error;
   }
 };
@@ -83,7 +124,7 @@ const revenueAdmin = async () => {
 
     return {
       code: 200,
-      data: rows.length > 0 ? rows : [], // Đảm bảo trả về mảng rỗng khi không có dữ liệu
+      data: rows.length > 0 ? rows : [],
     };
   } catch (error) {
     console.error("Lỗi truy vấn doanh thu admin:", error.message);
@@ -256,7 +297,8 @@ const getPaymentWithMomo = async (userId) => {
 };
 
 module.exports = {
-  getRevenueSeller,
+  getRevenueSellerByTime,
+  getRevenueAdminByTime,
   getOrdersWithCod,
   getPaymentWithMomo,
   revenueAdmin,

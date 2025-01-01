@@ -10,7 +10,10 @@ const {
 // lấy doanh thu
 router.get("/", checkLogin, async (req, res, next) => {
   try {
-    res.json(await controller.getRevenueSeller(req.payload.id));
+    const { month, year } = req.query;
+    res.json(
+      await controller.getRevenueSellerByTime(req.payload.id, month, year)
+    );
   } catch (error) {
     next(error);
   }
@@ -40,13 +43,32 @@ router.get(
   checkAdmin,
   async (req, res, next) => {
     try {
-      const result = await controller.revenueAdmin();
-      res.status(result.code).json(result);
+      const { month, year } = req.query;
+
+      // Chuyển đổi dữ liệu đầu vào sang dạng số nếu có
+      const monthNumber = month ? parseInt(month, 10) : null;
+      const yearNumber = year ? parseInt(year, 10) : null;
+
+      if (month && isNaN(monthNumber)) {
+        return res.status(400).json({ error: "Month must be a valid number" });
+      }
+      if (year && isNaN(yearNumber)) {
+        return res.status(400).json({ error: "Year must be a valid number" });
+      }
+
+      const revenueData = await controller.getRevenueAdminByTime(
+        monthNumber,
+        yearNumber
+      );
+
+      res.json(revenueData);
     } catch (error) {
-      next(error);
+      console.error("Error in /statisticalAdmin:", error);
+      next(error); // Để middleware xử lý lỗi
     }
   }
 );
+
 // danh sach sản phẩm thanh toán với momo - admin
 router.get("/order-momo", async (req, res, next) => {
   try {

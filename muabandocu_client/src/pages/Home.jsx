@@ -28,14 +28,15 @@ const Home = () => {
     <main>
       <Slideshow />
       <div className="container">
-        <div className="flex flex-wrap gap-7 mt-16">
-          {card.map((item, index) => (
-            <Card key={index} img={item} />
-          ))}
+        <h2 className="font-slab font-bold text-4xl">Sản phẩm được ưa thích</h2>
+        <div className="flex flex-wrap gap-7 mt-8">
+          <Card products={products} />
         </div>
         <div className="my-16">
           <div>
-            <h2 className="font-slab font-bold text-4xl">Sản phẩm mới nhất</h2>
+            <h2 className="font-slab font-bold text-4xl">
+              Sản phẩm mới cập nhật
+            </h2>
             <div className="flex justify-between items-center my-4">
               <p className="w-[470px] font-light">
                 Nhìn qua các sản phẩm mới của chúng tôi và làm cho ngày của bạn
@@ -48,7 +49,7 @@ const Home = () => {
               </NavLink>
             </div>
           </div>
-          <div className="flex flex-wrap gap-7 h-[1080px]">
+          <div className="flex flex-wrap gap-7 h-[1600px]">
             {products.length > 0 ? (
               products.map((product) => (
                 <Productcard key={product.id} product={product} />

@@ -45,7 +45,7 @@ const fetchProducts = async (setProducts, setTotalPages, setLoading, page) => {
   setLoading(true);
   try {
     const response = await axios.get(
-      `http://localhost:3000/products?page=${page}&limit=6`
+      `http://localhost:3000/products?page=${page}&limit=9`
     );
     setProducts(response.data.data);
     setTotalPages(response.data.pages);

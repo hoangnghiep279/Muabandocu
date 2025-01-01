@@ -10,28 +10,30 @@ function RevenueAdmin() {
   const [orderWithMomo, setOrdersWithMomo] = useState([]);
   const [revenueItemCod, setRevenueItemCod] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
   // Tổng doanh thu với tất cả đơn hàng
-  useEffect(() => {
-    const fetchRevenueData = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/revenue/statisticalAdmin",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setRevenueData(response.data.data);
-      } catch (err) {
-        setError("Không thể tải dữ liệu doanh thu.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchRevenueData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/revenue/statisticalAdmin",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { month: selectedMonth, year: selectedYear },
+        }
+      );
+      setRevenueData(response.data || []);
+    } catch (err) {
+      setError("Không thể tải dữ liệu doanh thu.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchRevenueData();
-  }, []);
+  }, [selectedMonth, selectedYear]);
 
   useEffect(() => {
     const fetchOrderData = async () => {
@@ -79,24 +81,15 @@ function RevenueAdmin() {
   }, []);
   console.log(revenueItemCod);
 
-  const handlePayment = async (orderItemId, amount) => {
+  const handlePayment = async (orderItemId, amount, momoAccount) => {
     try {
-      console.log("Token:", token);
-      console.log("Payload:", {
-        orderItemId,
-        totalprice: amount,
-        payment_method: "momo",
-        momoAccount: "0559851334",
-        redirectUrl: window.location.origin + "/admin",
-      });
-
       const response = await axios.post(
         "http://localhost:3000/revenue/momo-payment-seller",
         {
           orderItemId,
           totalprice: amount,
           payment_method: "momo",
-          momoAccount: "0559851334",
+          momoAccount: momoAccount,
           redirectUrl: window.location.origin + "/admin",
         },
         {
@@ -123,6 +116,13 @@ function RevenueAdmin() {
       return total + (isNaN(amount) ? 0 : amount);
     }, 0);
   };
+  const calculateTotalRevenue = (percent) => {
+    const total = revenueData.reduce(
+      (total, item) => total + parseInt(item.totalRevenue),
+      0
+    );
+    return total ? total * percent : 0;
+  };
 
   // lọc trạng thái người thanh toán trong phần cod
   const filteredData = revenueItemCod.filter((item) => {
@@ -137,11 +137,57 @@ function RevenueAdmin() {
       </div>
     );
   if (error) return <div>{error}</div>;
+  console.log(revenueData);
 
   return (
     <section className="p-5">
       <div className="p-2 pb-8 border-b-2 border-gray-800">
         <h1 className="text-3xl font-bold mb-3">Doanh thu</h1>
+        <div className="flex items-center gap-4 mb-7">
+          <div>
+            <label
+              htmlFor="month"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Tháng:
+            </label>
+            <select
+              id="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="mt-1 block  border w-32 h-10 border-gray-300 rounded-md shadow-sm"
+            >
+              <option value="">Tất cả</option>
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {i + 1}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="year"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Năm:
+            </label>
+            <input
+              type="number"
+              id="year"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="mt-1 block h-10 w-40 border border-gray-300 rounded-md shadow-sm"
+              placeholder="VD: 2023"
+            />
+          </div>
+          <button
+            onClick={fetchRevenueData}
+            className="mt-6 bg-primaryColor px-11 text-lg py-2 text-white rounded-md"
+          >
+            Lọc
+          </button>
+        </div>
         {revenueData.length > 0 ? (
           <div>
             <div className="flex items-center gap-5">
@@ -149,11 +195,7 @@ function RevenueAdmin() {
                 Tổng doanh thu với 5% hoa hồng:{" "}
               </h3>
               <span className="w-48 h-16 text-2xl font-semibold rounded-xl bg-primaryColor text-white flex-center">
-                {calculateTotal(
-                  revenueData,
-                  "commission_amount"
-                ).toLocaleString()}{" "}
-                VND
+                {calculateTotalRevenue(0.05).toLocaleString("vi-VN")}đ
               </span>
             </div>
           </div>
@@ -253,7 +295,8 @@ function RevenueAdmin() {
                               (Number(item.product_price) +
                                 Number(item.shipping_fee)) *
                                 0.95
-                            )
+                            ),
+                            item.momo_account
                           )
                         }
                       >
